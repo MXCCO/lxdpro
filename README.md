@@ -22,6 +22,7 @@ bash lxdpro.sh
 <br>实测甲骨文的2C2G60G能开30台1H512M1.5G的30台
 <br>DigitalOcean的4C8G160G不吃满硬盘的情况能开135台1H512G2GSSD
 <br>一般1C1G20GSSD的VPS能开15台左右
+<br>
 <br><img src="https://github.com/MXCCO/lxdpro/blob/main/%E6%88%AA%E5%9B%BE/containers.small.png?raw=true" border="0">
 
 ## 什么是LXC
