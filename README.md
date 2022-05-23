@@ -25,3 +25,6 @@ LXC 是 Linux 内核包含特性的用户空间接口。通过强大的 API 和�
 <br>6.容器与宿主机使用同一个内核，性能损失小
 <br>7.轻量级隔离，每个容器拥有自己的系统互不影响
 <br>8.容器可以共享地使用宿主机的所有计算资源
+## 脚本截图
+首页
+<br><img src="https://github.com/MXCCO/lxdpro/blob/main/%E6%88%AA%E5%9B%BE/LXD.PNG?raw=true">
