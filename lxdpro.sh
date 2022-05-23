@@ -877,16 +877,16 @@ fi
 # 创建系统容器
 admin_cat2()
 {
-    clear 
-    echo -e "—————————————By'MXCCO———————————————"
-    echo -e "脚本地址："
-    echo -e "更新时间：2022.5.23"
-    echo -e "————————————————————————————————————"
-    echo -e "          ${Green}1.一键创建容器${Font}"
-    echo -e "          ${Green}2.创建物理卷${Font}"
-    echo -e "          ${Green}3.创建网卡${Font}"
-    echo -e "          ${Green}4.创建配置模板${Font}"
-    echo -e "          ${Green}5.创建容器${Font}"
+clear 
+echo -e "————————————————By'MXCCO———————————————"
+echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
+echo -e "更新时间: 2022.5.23"
+echo -e "———————————————————————————————————————"
+echo -e "          ${Green}1.一键创建容器${Font}"
+echo -e "          ${Green}2.创建物理卷${Font}"
+echo -e "          ${Green}3.创建网卡${Font}"
+echo -e "          ${Green}4.创建配置模板${Font}"
+echo -e "          ${Green}5.创建容器${Font}"
 
 while :; do echo
 		read -p "请输入数字选择: " choice
@@ -921,15 +921,10 @@ esac
 admin_cat3()
 {
     clear 
-    echo -e "—————————————By'MXCCO———————————————"
-    echo -e "脚本地址："
-    echo -e "更新时间：2022.5.23"
-    echo -e "————————————————————————————————————"  
-    echo -e "          ${Green}1.一键删除${Font}"
-    echo -e "          ${Green}2.删除网络${Font}"
-    echo -e "          ${Green}3.删除磁盘${Font}"
-    echo -e "          ${Green}4.删除容器${Font}"
-    echo -e "          ${Green}5.删除容器配置模板${Font}"
+echo -e "————————————————By'MXCCO———————————————"
+echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
+echo -e "更新时间: 2022.5.23"
+echo -e "———————————————————————————————————————"echo -e "          ${Green}1.一键删除${Font}"echo -e "          ${Green}2.删除网络${Font}"echo -e "          ${Green}3.删除磁盘${Font}"echo -e "          ${Green}4.删除容器${Font}"echo -e "          ${Green}5.删除容器配置模板${Font}"
 while :; do echo
 		read -p "请输入数字选择: " choice 
 		if [[ ! $choice =~ ^[1-4]$ ]]
@@ -972,21 +967,11 @@ esac
 #管理系统容器
 admin_cat4()
 {
-    clear 
-    echo -e "—————————————By'MXCCO———————————————"
-    echo -e "脚本地址："
-    echo -e "更新时间：2022.5.23"
-    echo -e "————————————————————————————————————"
-    echo -e "          ${Green}1.启动容器${Font}"
-    echo -e "          ${Green}2.停止容器${Font}"
-    echo -e "          ${Green}3.重启容器${Font}"
-    echo -e "          ${Green}4.进入指定容器${Font}"
-    echo -e "          ${Green}5.查看容器信息${Font}"
-    echo -e "          ${Green}6.查看容器列表${Font}"
-    echo -e "          ${Green}7.查看磁盘列表${Font}"
-    echo -e "          ${Green}8.查看网卡列表${Font}"
-    echo -e "          ${Green}9.对容器进行限制${Font}"
-    echo -e "          ${Green}10.通过进程PID查找容器${Font}"
+clear 
+echo -e "————————————————By'MXCCO———————————————"
+echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
+echo -e "更新时间: 2022.5.23"
+echo -e "———————————————————————————————————————echo -e "          ${Green}1.启动容器${Font}echo -e "          ${Green}2.停止容器${Font}echo -e "          ${Green}3.重启容器${Font}echo -e "          ${Green}4.进入指定容器${Font}echo -e "          ${Green}5.查看容器信息${Font}echo -e "          ${Green}6.查看容器列表${Font}echo -e "          ${Green}7.查看磁盘列表${Font}echo -e "          ${Green}8.查看网卡列表${Font}echo -e "          ${Green}9.对容器进行限制${Font}echo -e "          ${Green}10.通过进程PID查找容器${Font}"
 
 while :; do echo
 		read -p "请输入数字选择: " choice
@@ -1034,10 +1019,13 @@ esac
 
 
 #首页
-echo -e "—————————————By'MXCCO———————————————"
-echo -e "脚本地址："
-echo -e "更新时间：2022.5.23"
-echo -e "————————————————————————————————————"
+front_page()
+{
+clear
+echo -e "————————————————By'MXCCO———————————————"
+echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
+echo -e "更新时间: 2022.5.23"
+echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.安装LXD${Font}"
 echo -e "          ${Green}2.创建系统容器${Font}"
 echo -e "          ${Green}3.删除系统容器${Font}"
@@ -1068,3 +1056,7 @@ case $choice in
     *)  echo '你没有输入 1 到 4 之间的数字'
     ;;
 esac
+}
+
+
+front_page
