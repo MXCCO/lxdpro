@@ -1,5 +1,7 @@
 # 这是一个什么脚本？
-一个基于LXD开系统容器的脚本,开小鸡不求人
+<br>这是个能开系统容器的脚本,类似于虚拟机，俗称开“小鸡”此脚本基于Ubuntu的LXD，目前仅支持Ubuntu/Debian系统,其他系统看情况后续再做更新
+# 为什么要写这个脚本？
+<br>有天我在LOC的论坛上发现有找人合租VPS的意向,但是对方说只能用docker开车,我就翻了记录很多VPS合租都用docker,但是我更需要是一个独立的系统,所以萌生了写这个脚本。
 ```
 wget -N --no-check-certificate https://raw.githubusercontent.com/MXCCO/lxdpro/main/lxdpro.sh && bash lxdpro.sh
 ```
@@ -8,8 +10,12 @@ wget -N --no-check-certificate https://raw.githubusercontent.com/MXCCO/lxdpro/ma
 bash lxdpro.sh
 ```
 ## 脚本特点
+* 1分钟内快速创建系统容器
+* 
+* 
 
-<img src="https://github.com/MXCCO/lxdpro/blob/main/%E6%88%AA%E5%9B%BE/containers.small.png?raw=true" border="0">
+
+<br><img src="https://github.com/MXCCO/lxdpro/blob/main/%E6%88%AA%E5%9B%BE/containers.small.png?raw=true" border="0">
 
 ## 什么是LXC
 LXC 是 Linux 内核包含特性的用户空间接口。通过强大的 API 和简单的工具，它可以让 Linux 用户轻松创建和管理系统或应用程序容器。
