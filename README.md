@@ -7,8 +7,8 @@ wget -N --no-check-certificate https://raw.githubusercontent.com/MXCCO/lxdpro/ma
 ```
 bash lxdpro.sh
 ```
-# 脚本特点
-## 什么是LXC
+## 脚本特点
+
 <img src="https://github.com/MXCCO/lxdpro/blob/main/%E6%88%AA%E5%9B%BE/containers.small.png?raw=true" border="0">
 
 ## 什么是LXC
