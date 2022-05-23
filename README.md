@@ -3,7 +3,7 @@
 ```
 wget -N --no-check-certificate https://raw.githubusercontent.com/MXCCO/lxdpro/main/lxdpro.sh && bash lxdpro.sh
 ```
-<img src="/static/img/containers.small.png" border="0">
+<img src="[/static/img/containers.small.png](https://github.com/MXCCO/lxdpro/blob/main/%E6%88%AA%E5%9B%BE/containers.small.png?raw=true)" border="0">
 ## 什么是LXC
 LXC 是 Linux 内核包含特性的用户空间接口。通过强大的 API 和简单的工具，它可以让 Linux 用户轻松创建和管理系统或应用程序容器。
 LXC 容器通常被认为介于 chroot 和成熟的虚拟机之间。LXC 的目标是创建一个尽可能接近标准 Linux 安装的环境，但不需要单独的内核。
