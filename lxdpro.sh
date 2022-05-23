@@ -205,7 +205,7 @@ alone_lxc_Profiles()
 {
 clear
 head -p "请输入要创建的模板名称: " lxc_name
-[ -z "$lxc_name" ] && 不能为空请重新输入; sleep 3s; alone_lxc_Profiles
+[ -z "$lxc_name" ] && 不能为空请重新输入&& sleep 3s && alone_lxc_Profiles
 head -p "请输入关联此模板的网卡: " lxc_name_network
 [ -z "$lxc_name_network" ] && 不能为空请重新输入; sleep 3s; alone_lxc_Profiles
 head -p "请输入关联此模板的物理卷: " lxc_name_disk
@@ -924,7 +924,12 @@ admin_cat3()
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
 echo -e "更新时间: 2022.5.23"
-echo -e "———————————————————————————————————————"echo -e "          ${Green}1.一键删除${Font}"echo -e "          ${Green}2.删除网络${Font}"echo -e "          ${Green}3.删除磁盘${Font}"echo -e "          ${Green}4.删除容器${Font}"echo -e "          ${Green}5.删除容器配置模板${Font}"
+echo -e "———————————————————————————————————————"
+echo -e "          ${Green}1.一键删除${Font}"
+echo -e "          ${Green}2.删除网络${Font}"
+echo -e "          ${Green}3.删除磁盘${Font}"
+echo -e "          ${Green}4.删除容器${Font}"
+echo -e "          ${Green}5.删除容器配置模板${Font}"
 while :; do echo
 		read -p "请输入数字选择: " choice 
 		if [[ ! $choice =~ ^[1-4]$ ]]
@@ -971,7 +976,17 @@ clear
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
 echo -e "更新时间: 2022.5.23"
-echo -e "———————————————————————————————————————echo -e "          ${Green}1.启动容器${Font}echo -e "          ${Green}2.停止容器${Font}echo -e "          ${Green}3.重启容器${Font}echo -e "          ${Green}4.进入指定容器${Font}echo -e "          ${Green}5.查看容器信息${Font}echo -e "          ${Green}6.查看容器列表${Font}echo -e "          ${Green}7.查看磁盘列表${Font}echo -e "          ${Green}8.查看网卡列表${Font}echo -e "          ${Green}9.对容器进行限制${Font}echo -e "          ${Green}10.通过进程PID查找容器${Font}"
+echo -e "———————————————————————————————————————"
+echo -e "          ${Green}1.启动容器${Font}"
+echo -e "          ${Green}2.停止容器${Font}"
+echo -e "          ${Green}3.重启容器${Font}"
+echo -e "          ${Green}4.进入指定容器${Font}"
+echo -e "          ${Green}5.查看容器信息${Font}"
+echo -e "          ${Green}6.查看容器列表${Font}"
+echo -e "          ${Green}7.查看磁盘列表${Font}"
+echo -e "          ${Green}8.查看网卡列表${Font}"
+echo -e "          ${Green}9.对容器进行限制${Font}"
+echo -e "          ${Green}10.通过进程PID查找容器${Font}"
 
 while :; do echo
 		read -p "请输入数字选择: " choice
