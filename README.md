@@ -9,7 +9,7 @@ wget -N --no-check-certificate https://raw.githubusercontent.com/MXCCO/lxdpro/ma
 ## 什么是LXC
 LXC 是 Linux 内核包含特性的用户空间接口。通过强大的 API 和简单的工具，它可以让 Linux 用户轻松创建和管理系统或应用程序容器。
 <br>LXC 容器通常被认为介于 chroot 和成熟的虚拟机之间。LXC 的目标是创建一个尽可能接近标准 Linux 安装的环境，但不需要单独的内核。
-<br>为什么不用Docker作为系统容器呢？Docker针对应用的部署做了优化，反映在其API，用户接口，设计原理及文档上面.而LXC仅仅关注容器作为一个轻量级的服务器。,docker底层就是LXC，是LXC的拓展可<br>以理解为docker是lxc儿子,在LXC中可以使用docker.
+<br>为什么不用Docker作为系统容器呢？Docker针对应用的部署做了优化，反映在其API，用户接口，设计原理及文档上面.而LXC仅仅关注容器作为一个轻量级的服务器。,docker底层就是LXC，是LXC的拓展可以理解为docker是lxc儿子,在LXC中可以使用docker.
 
 ## 什么是LXD
 官方的介绍：
