@@ -1,9 +1,14 @@
-# lxdpro
+# 这是一个什么脚本？
 一个基于LXD开系统容器的脚本,开小鸡不求人
 ```
 wget -N --no-check-certificate https://raw.githubusercontent.com/MXCCO/lxdpro/main/lxdpro.sh && bash lxdpro.sh
 ```
-
+<br>再次使用
+```
+bash lxdpro.sh
+```
+# 脚本特点
+## 什么是LXC
 <img src="https://github.com/MXCCO/lxdpro/blob/main/%E6%88%AA%E5%9B%BE/containers.small.png?raw=true" border="0">
 
 ## 什么是LXC
