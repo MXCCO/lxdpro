@@ -1,5 +1,6 @@
 # 这是一个什么脚本？
-<br>这是个能开系统容器的脚本,类似于虚拟机，俗称开“小鸡”,小白也能开小鸡,此脚本基于Ubuntu的LXD，目前仅支持Ubuntu/Debian系统,其他系统看情况后续再做更新
+<br>这是个能开系统容器的脚本,类似于虚拟机，俗称开“小鸡”,小白也能开小鸡,此脚本基于Ubuntu/Ddebian的snap安装,目前仅支持Ubuntu/Debian系统,其他系统看情况后续再做更新
+<br>大部分VPS商的Ubuntu镜像包都有自带snap包和LXD可以无需在安装
 # 为什么要写这个脚本？
 <br>有天我在LOC的论坛上发现有找人合租VPS的意向,但是对方说只能用docker开车,我就翻了记录很多VPS合租都用docker,但是我更需要是一个独立的系统,所以萌生了写这个脚本。
 ```
@@ -17,7 +18,8 @@ bash lxdpro.sh
 * 支持对系统CPU、内存、磁盘大小限制
 * 支持主流的系统创建，如Debian11,ubantu21，centos7,还有其他apine等
 * 支持开公网IPV4和IPV6,但是需要一定的liunx知识,支持内网转发
-
+<br>
+<br>实测甲骨文的2H2G
 <br><img src="https://github.com/MXCCO/lxdpro/blob/main/%E6%88%AA%E5%9B%BE/containers.small.png?raw=true" border="0">
 
 ## 什么是LXC
