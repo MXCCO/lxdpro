@@ -460,18 +460,21 @@ lxc exec ${lxc_exec} /bin/bash
 #容器列表
 lxd_list_lxc()
 {
+clear
 lxc ls -c npc
 }
 
 #磁盘列表
 lxd_list_disk()
 {
+clear
 lxc storage list
 }
 
 #网卡列表
 lxd_list_network()
 {
+clear
 lxc network list
 }
 
@@ -877,6 +880,8 @@ fi
 # 创建系统容器
 admin_cat2()
 {
+if [[ -d '/snap/lxd' ]];then
+
 clear 
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
@@ -887,10 +892,13 @@ echo -e "          ${Green}2.创建物理卷${Font}"
 echo -e "          ${Green}3.创建网卡${Font}"
 echo -e "          ${Green}4.创建配置模板${Font}"
 echo -e "          ${Green}5.创建容器${Font}"
+echo -e "          ${Green}0.返回首页${Font}"
+
+
 
 while :; do echo
 		read -p "请输入数字选择: " choice
-		if [[ ! $choice =~ ^[1-5]$ ]]
+		if [[ ! $choice =~ ^[0-5]$ ]]
          then
 				echo -ne "     ${Red}输入错误, 请输入正确的数字!${Font}"
 		 else
@@ -899,6 +907,8 @@ while :; do echo
 done
 
 case $choice in
+    0)  front_page
+    ;;
     1)  lxd_Create_selection
     ;;
     2)  alone_lxc_disk
@@ -910,7 +920,11 @@ case $choice in
     5)  alone_lxc
     ;;
 esac
-
+else 
+echo -e "     ${Red}请先安装LXD!${Font}"
+sleep 5s
+front_page
+fi
 }
 
 
@@ -930,9 +944,10 @@ echo -e "          ${Green}2.删除网络${Font}"
 echo -e "          ${Green}3.删除磁盘${Font}"
 echo -e "          ${Green}4.删除容器${Font}"
 echo -e "          ${Green}5.删除容器配置模板${Font}"
+echo -e "          ${Green}0.返回首页${Font}"
 while :; do echo
 		read -p "请输入数字选择: " choice 
-		if [[ ! $choice =~ ^[1-4]$ ]]
+		if [[ ! $choice =~ ^[0-4]$ ]]
          then
 				echo -ne "     ${Red}输入错误, 请输入正确的数字!${Font}"
 		 else
@@ -941,6 +956,8 @@ while :; do echo
 done
 
 case $choice in
+    0)  front_page
+    ;;
     1)  lxd_delete_lxc
         lxc_stop
         lxc_delete
@@ -987,10 +1004,10 @@ echo -e "          ${Green}7.查看磁盘列表${Font}"
 echo -e "          ${Green}8.查看网卡列表${Font}"
 echo -e "          ${Green}9.对容器进行限制${Font}"
 echo -e "          ${Green}10.通过进程PID查找容器${Font}"
-
+echo -e "          ${Green}0.返回首页${Font}"
 while :; do echo
 		read -p "请输入数字选择: " choice
-		if [[ $choice -ge 1 ]] && [[ $choice -le 10 ]]
+		if [[ $choice -ge 0 ]] && [[ $choice -le 10 ]]
          then
 				break
 		 else
@@ -999,6 +1016,8 @@ while :; do echo
 done
 
 case $choice in
+    0)  front_page
+    ;;
     1)  lxd_lxc_start
     ;;
     2)  lxd_lxc_stop
@@ -1061,6 +1080,8 @@ done
 case $choice in
     1)  snap_install
         lxd_install
+        sleep 3s
+        front_page
     ;;
     2)  admin_cat2
     ;;
