@@ -204,12 +204,14 @@ echo -e "创建容器完成                 ${Green}[success]${Font}"
 alone_lxc_Profiles()
 {
 clear
-head -p "请输入要创建的模板名称: " lxc_name
-[ -z "$lxc_name" ] && 不能为空请重新输入&& sleep 3s && alone_lxc_Profiles
-head -p "请输入关联此模板的网卡: " lxc_name_network
-[ -z "$lxc_name_network" ] && 不能为空请重新输入; sleep 3s; alone_lxc_Profiles
-head -p "请输入关联此模板的物理卷: " lxc_name_disk
-[ -z "$lxc_name_disk" ] && 不能为空请重新输入; sleep 3s; alone_lxc_Profiles
+read -p "请输入要创建的模板名称: " lxc_name
+read -p "请输入关联此模板的网卡: " lxc_name_network
+read -p "请输入关联此模板的物理卷: " lxc_name_disk
+if [ -z "$lxc_name" -o -z "$lxc_name_network" -o -z "$lxc_name_disk" ];then
+        echo "不能为空请重新输入"
+        sleep 3s
+        alone_lxc_Profiles
+fi
 lxd_limits
 echo -e "开始写入配置模板             ${yellow}[warnning]${Font}"
 echo `lxc profile create $lxc_name >/dev/null 2>&1`
@@ -282,9 +284,11 @@ alone_lxc()
 clear
 read -p "请输入要创建的容器名称：" lxc_name
 read -p "输入需要与此容器关联的模板名称：" lxc_Profiles
-[ -z "$lxc_name" ] && 不能为空请重新输入!; sleep 3s; alone_lxc
-[ -z "$lxc_Profiles" ] && 不能为空请重新输入!; sleep 3s; alone_lxc
-
+if [ -z "$lxc_name" -o -z "$lxc_Profiles" ];then
+        echo "不能为空请重新输入!"
+        sleep 3s
+        alone_lxc
+fi
 echo -e "开始创建容器                 ${yellow}[warnning]${Font}"
 echo `lxc init images:debian/bullseye ${lxc_name} -p ${lxc_Profiles}`
 echo -e "创建容器完成                 ${Green}[success]${Font}"
@@ -611,10 +615,11 @@ echo -e "6.限制硬盘IO"
 echo -e "7.设置CPU优先级"
 echo -e "8.设置网络优先级"
 echo -e "9.设置硬盘优先级"
+echo -e "0.返回首页"
 
 while :; do echo
 		read -p "请输入数字选择: " choice
-		if [[ ! $choice =~ ^[1-7]$ ]]
+		if [[ ! $choice =~ ^[0-9]$ ]]
          then
 				echo -ne "     ${Red}输入错误, 请输入正确的数字!${Font}"
 		 else
@@ -625,6 +630,8 @@ done
 
 
 case $choice in
+    0)  front_page
+    ;;
     1)  read -p "请输入要限制的容器: " lxc_name
         read -p "请输入要限制的CPU内核数: " lxc_cpu
         lxc_user_cpu
