@@ -1064,7 +1064,7 @@ echo -e "          ${Green}1.安装LXD${Font}"
 echo -e "          ${Green}2.创建系统容器${Font}"
 echo -e "          ${Green}3.删除系统容器${Font}"
 echo -e "          ${Green}4.管理系统容器${Font}"
-echo -e "          ${Green}5.管理系统容器${Font}"
+echo -e "          ${Green}5.更新脚本${Font}"
 
 
 
