@@ -1064,11 +1064,13 @@ echo -e "          ${Green}1.安装LXD${Font}"
 echo -e "          ${Green}2.创建系统容器${Font}"
 echo -e "          ${Green}3.删除系统容器${Font}"
 echo -e "          ${Green}4.管理系统容器${Font}"
+echo -e "          ${Green}5.管理系统容器${Font}"
+
 
 
 while :; do echo
 		read -p "请输入数字选择: " choice
-		if [[ ! $choice =~ ^[1-4]$ ]]
+		if [[ ! $choice =~ ^[1-5]$ ]]
          then
 				echo -ne "     ${Red}输入错误, 请输入正确的数字!${Font}"
 		 else
@@ -1089,7 +1091,11 @@ case $choice in
     ;;
     4)  admin_cat4
     ;;
-    *)  echo '你没有输入 1 到 4 之间的数字'
+    5)  wget -N --no-check-certificate https://raw.githubusercontent.com/MXCCO/lxdpro/main/lxdpro.sh
+        chmod +x lxdpro.sh
+        echo "更新完成3秒后执行新脚本"
+        sleep 3s
+        ./lxdpro.sh
     ;;
 esac
 }
