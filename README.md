@@ -18,6 +18,7 @@ bash lxdpro.sh
 * 支持对系统CPU、内存、磁盘大小限制
 * 支持主流的系统创建，如Debian11,ubantu21，centos7,还有其他apine等
 * 支持开公网IPV4和IPV6,但是需要一定的liunx知识,支持内网转发
+* 发现高占用进程可以通过此脚本查找到指定小鸡
 <br>
 <br> ————实测甲骨文的2C2G60G能开30台1H512M1.5G的30台
 <br> ————DigitalOcean的4C8G160G不吃满硬盘的情况能开135台1H512G2GSSD
