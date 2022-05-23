@@ -11,9 +11,11 @@ bash lxdpro.sh
 ```
 ## 脚本特点
 * 1分钟内快速创建系统容器
-* 
-* 
-
+* 直接调用基于官方的apt和snap包安装,脚本没有一个调用wget和curl外部的安装包,放心使用
+* 无需独立服务器也能开小鸡，大部分VPS都能开
+* 支持对系统CPU、内存、磁盘大小限制
+* 支持主流的系统创建，如Debian11,ubantu21，centos7,还有其他apine等
+* 支持内网转发
 
 <br><img src="https://github.com/MXCCO/lxdpro/blob/main/%E6%88%AA%E5%9B%BE/containers.small.png?raw=true" border="0">
 
