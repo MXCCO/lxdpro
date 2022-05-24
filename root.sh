@@ -6,4 +6,4 @@ sudo sed -i "s/^#\?PasswordAuthentication.*/PasswordAuthentication yes/g" /etc/s
 service sshd restart
 systemctl enable sshd.service>/dev/null 2>&1
 passwd=$2
-echo root:${passwd}|chpasswd
+echo root:${passwd}| sudo chpasswd
