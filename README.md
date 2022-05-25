@@ -65,6 +65,7 @@ LXC 是 Linux 内核包含特性的用户空间接口。通过强大的 API 和�
 <br><img src="https://github.com/MXCCO/lxdpro/blob/main/%E6%88%AA%E5%9B%BE/LXD5.PNG?raw=true">
 <P>安装镜像选择页面：</p>
 <br><img src="https://github.com/MXCCO/lxdpro/blob/main/%E6%88%AA%E5%9B%BE/LXD6.PNG?raw=true">
+
 ## 实测
 <br>这是我通过脚本开出来的小鸡 4H1G 8g硬盘 50M
 <br><img src="https://github.com/MXCCO/lxdpro/blob/main/%E6%88%AA%E5%9B%BE/LXD7.PNG?raw=true">
