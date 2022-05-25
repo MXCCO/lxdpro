@@ -692,7 +692,7 @@ esac
 lxd_information()
 {
 lxc_current=`lxc info ${lxc_name} | grep current | awk '{print $3}'`
-lxc_peak=`lxc info ${lxc_name} | grep peak | awk '{print $3}'`
+lxc_peak=`lxc info ${lxc_name} | grep 'Memory (peak):' | awk '{print $3}'`
 lxc_received=`lxc info ${lxc_name} | grep -A 13 eth0 | grep 'Bytes received:' | awk '{print $3}'`
 lxc_sent=`lxc info ${lxc_name} | grep -A 13 eth0 | grep 'Bytes sent:' | awk '{print $3}'`
 lxc_PID=`lxc info ${lxc_name} | grep PID: | awk '{print $2}'`
@@ -707,6 +707,12 @@ lxc_image_os=`lxc config show ${lxc_name} | grep 'image.description:' | awk '{ $
 lxc_architecture=`lxc config show ${lxc_name} | grep 'architecture:' | grep -v 'image.architecture:' | awk '{print $2}'`
 lxc_architecture_a=`lxc config show ${lxc_name} | grep 'image.architecture:' | awk '{print $2}'`
 lxc_profiles=`lxc config show ${lxc_name} | grep -A 1 'profiles:' | grep '-' | awk '{print $2}'`
+if [ -z "$lxc_cpu" ];then
+    lxc_cpu=`lxc profile show ${lxc_name} | grep 'limits.cpu:' | awk '{print $2}' | tr -cd "[0-9]"`
+fi
+if [ -z "$lxc_memory" ];then
+    lxc_memory=`lxc profile show ${lxc_name} | grep 'limits.memory:' | awk '{print $2}'`
+fi
 clear
 echo -e "${Cyan}容器名: ${Font}${yellow}${lxc_name}${Font}"
 echo -e "${Cyan}创建时间: ${Font}${yellow}${lxc_Created}${Font}"
@@ -827,6 +833,63 @@ lxc_start
 lxd_information
 
 }
+#一键开启容器SSH
+lxc_root_passwd(){
+echo "正在查询容器系统镜像"
+lxc_root_install=`lxc config show ${lxc_name} | grep 'image.os:' | awk '{ $1=""; print $0 }'`
+if [[ "$lxc_root_install" =~ ubuntu.* ]];
+then
+    lxc_root_install="apt -y install"
+fi
+if [[ "$lxc_root_install" =~ debian.* ]];
+then
+    lxc_root_install="apt -y install"
+fi
+if [[ "$lxc_root_install" =~ centos.* ]];
+then
+    lxc_root_install="yum -y install"
+fi
+if [[ "$lxc_root_install" =~ alpine.* ]];
+then
+    lxc_root_install="apk add -f"
+fi
+if [ -z "$lxc_root_install" ];
+then
+    echo "当前容器不是主流系统,请进入容器自行安装"
+    exit 0
+fi
+
+
+read -p "SSH端口(默认22): " lxc_ssh_port
+read -p "SSH密码(默认随机): " lxc_ssh_passwd
+if [ -z "$lxc_ssh_port" ];then
+lxc_ssh_port="22"
+fi
+if [ -z "$lxc_passwd" ];then
+key="0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+num=${#key}
+for i in {1..8}
+do 
+    index=$[RANDOM%num]
+    lxc_ssh_passwd=$lxc_ssh_passwd${key:$index:1}
+done
+fi
+
+cat << EOF >/root/root.sh
+sudo ${lxc_root_install} wget
+sudo ${lxc_root_install} openssh-server
+sudo sed -i "s/^#\?Port.*/Port ${lxc_ssh_port}/g" /etc/ssh/sshd_config;
+sudo sed -i "s/^#\?PermitRootLogin.*/PermitRootLogin yes/g" /etc/ssh/sshd_config;
+sudo sed -i "s/^#\?PasswordAuthentication.*/PasswordAuthentication yes/g" /etc/ssh/sshd_config;
+service sshd restart
+systemctl enable sshd.service>/dev/null 2>&1
+echo root:${lxc_ssh_passwd} | sudo chpasswd root
+EOF
+lxc file push /root/root.sh ${lxc_name}/root/
+lxc exec ${lxc_name} sudo -- sudo bash root.sh
+echo -e "已将${yellow}${lxc_name}${Font}容器SHH端口设置为 ${Red}${lxc_ssh_port}${Font} SSH密码为 ${Red}${lxc_ssh_passwd}${Font}"
+}
+
 
 
 
@@ -892,7 +955,7 @@ if [[ -d '/snap/lxd' ]];then
 clear 
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2022.5.23"
+echo -e "更新时间: 2022.5.25"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.一键创建容器${Font}"
 echo -e "          ${Green}2.创建物理卷${Font}"
@@ -944,7 +1007,7 @@ admin_cat3()
     clear 
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2022.5.23"
+echo -e "更新时间: 2022.5.25"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.一键删除${Font}"
 echo -e "          ${Green}2.删除网络${Font}"
@@ -954,7 +1017,7 @@ echo -e "          ${Green}5.删除容器配置模板${Font}"
 echo -e "          ${Green}0.返回首页${Font}"
 while :; do echo
 		read -p "请输入数字选择: " choice 
-		if [[ ! $choice =~ ^[0-4]$ ]]
+		if [[ ! $choice =~ ^[0-5]$ ]]
          then
 				echo -ne "     ${Red}输入错误, 请输入正确的数字!${Font}"
 		 else
@@ -999,7 +1062,7 @@ admin_cat4()
 clear 
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2022.5.23"
+echo -e "更新时间: 2022.5.25"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.启动容器${Font}"
 echo -e "          ${Green}2.停止容器${Font}"
@@ -1011,10 +1074,12 @@ echo -e "          ${Green}7.查看磁盘列表${Font}"
 echo -e "          ${Green}8.查看网卡列表${Font}"
 echo -e "          ${Green}9.对容器进行限制${Font}"
 echo -e "          ${Green}10.通过进程PID查找容器${Font}"
+echo -e "          ${Green}11.一键开启容器SSH${Font}"
 echo -e "          ${Green}0.返回首页${Font}"
+
 while :; do echo
 		read -p "请输入数字选择: " choice
-		if [[ $choice -ge 0 ]] && [[ $choice -le 10 ]]
+		if [[ $choice -ge 0 ]] && [[ $choice -le 11 ]]
          then
 				break
 		 else
@@ -1047,13 +1112,14 @@ case $choice in
     ;;
     10) lxd_lxc_pid
     ;;
+    11) lxd_name
+        lxc_root_passwd
+    ;;
 esac
 
 
 
 }
-
-
 
 
 
@@ -1065,7 +1131,7 @@ front_page()
 clear
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2022.5.23"
+echo -e "更新时间: 2022.5.25"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.安装LXD${Font}"
 echo -e "          ${Green}2.创建系统容器${Font}"
@@ -1109,3 +1175,6 @@ esac
 
 
 front_page
+
+
+
