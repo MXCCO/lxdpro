@@ -10,6 +10,11 @@ wget -N --no-check-certificate https://raw.githubusercontent.com/MXCCO/lxdpro/ma
 ```
 bash lxdpro.sh
 ```
+
+## 更新日志
+<P>2022.5.25&nbsp;新增加一键脚本,一键开启系统容器的SSH和修改SSH密码
+<br>
+<P>2022.5.23&nbsp;脚本完成，主体50％的功能
 ## 脚本特点
 * 1分钟内快速创建系统容器
 * 每个小鸡拥有独立的环境
