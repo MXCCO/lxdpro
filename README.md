@@ -51,17 +51,17 @@ LXC 是 Linux 内核包含特性的用户空间接口。通过强大的 API 和�
 * 轻量级隔离，每个容器拥有自己的系统互不影响
 * 容器可以共享地使用宿主机的所有计算资源
 ## 脚本截图
-首页：
+<P>首页：</p>
 <br><img src="https://github.com/MXCCO/lxdpro/blob/main/%E6%88%AA%E5%9B%BE/LXD.PNG?raw=true">
-<br>系统容器创建：
+<P>系统容器创建：</p>
 <br><img src="https://github.com/MXCCO/lxdpro/blob/main/%E6%88%AA%E5%9B%BE/LXD2.PNG?raw=true">
-<br>管理容器页面：
+<P>管理容器页面：</p>
 <br><img src="https://github.com/MXCCO/lxdpro/blob/main/%E6%88%AA%E5%9B%BE/LXD3.PNG?raw=true">
-<br>容器限制页面：
+<P>容器限制页面：</p>
 <br><img src="https://github.com/MXCCO/lxdpro/blob/main/%E6%88%AA%E5%9B%BE/LXD4.PNG?raw=true">
-<br>容器信息页面：
+<P>容器信息页面：</p>
 <br><img src="https://github.com/MXCCO/lxdpro/blob/main/%E6%88%AA%E5%9B%BE/LXD5.PNG?raw=true">
-<br>安装镜像选择页面：
+<P>安装镜像选择页面：</p>
 <br><img src="https://github.com/MXCCO/lxdpro/blob/main/%E6%88%AA%E5%9B%BE/LXD6.PNG?raw=true">
 ## 实测
 <br>这是我通过脚本开出来的小鸡 4H1G 8g硬盘 50M
