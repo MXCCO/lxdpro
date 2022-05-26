@@ -10,33 +10,50 @@ Pe="\033[0;35m"
 
 
 
+
+
+#报错检测
+snap_detect(){
+    lxd_lxc_detect=`lxc list`
+    if [[ "$lxd_lxc_detect" =~ "snap-update-ns failed with code1".* ]]
+    then
+    systemctl restart apparmor
+    snap restart lxd
+    else
+    echo "环境没问题"
+    fi
+    
+}
 # 安装snap
 snap_install(){
-    if [[ -d '/snap' ]]
-        then
-            echo "snap已安装"
-            
-        else
-            echo "未安装snap"
-            echo "开始安装snap"
-            echo `apt install snap -y`
-            echo `apt install snapd -y`
-            echo "snap安装完成"
+    lxd_snap=`dpkg -l |awk '/^[hi]i/{print $2}' | grep -ow snap`
+    lxd_snapd=`dpkg -l |awk '/^[hi]i/{print $2}' | grep -ow snapd`
+    if [[ "$lxd_snap" =~ ^snap.* ]]&&[[ "$lxd_snapd" =~ ^snapd.* ]]
+    then
+    echo "snap已安装"
+    else
+    echo "开始安装snap"
+    sudo apt update
+    sudo apt -y install snap
+    sudo apt -y install snapd
     fi
 }
 # 安装LXD
 lxd_install(){
-    if [[ -d '/snap/lxd' ]]
-        then
-            echo "lxd已安装"
-            
-        else
-            echo "未安装LXD"
-            echo "开始安装LXD"
-            echo `apt install snap -y`
-            echo `snap install lxd`
-            echo "LXD安装完成"
-            echo "需要重启可执行后续脚本"
+    snap_core20=`snap list core20`
+    snap_lxd=`snap list lxd`
+    if [[ "$snap_core20" =~ core20.* ]]&&[[ "$snap_lxd" =~ lxd.* ]]
+    then
+    echo "lxd已安装"
+    snap_detect
+    else
+    echo "开始安装LXD"
+    sudo snap install core
+    sudo snap install lxd
+    echo "LXD安装完成"        
+    echo "需要重启才能使用后续脚本"
+    echo "重启后systemctl restart apparmor"
+    exit 0
     fi
 }
 
@@ -312,7 +329,7 @@ lxc init tuna-images:${lxc_os} ${lxc_name} -n ${lxc_name} -s ${lxc_name}>/dev/nu
 lxc_user_storage_create()
 {
 echo "开始创建物理卷 物理卷名: ${lxc_name}"
-lxc storage create ${lxc_name} zfs>/dev/null 2>&1
+lxc storage create ${lxc_name} btrfs>/dev/null 2>&1
 }
 #创建简单网卡
 lxc_user_network_create()
@@ -785,37 +802,37 @@ done
 
 
 if [[ ${choice} == 1 ]]; then
-           lxc_os="e61699158f1a"
+           lxc_os="centos/7"
 fi
 if [[ ${choice} == 2 ]]; then
-           lxc_os="69db22001a7a"
+           lxc_os="debian/10"
 fi
 if [[ ${choice} == 3 ]]; then
-           lxc_os="3a4163222a99"
+           lxc_os="debian/11"
 fi
 if [[ ${choice} == 4 ]]; then
-           lxc_os="181b0eb3695b"
+           lxc_os="ubuntu/16.04"
 fi
 if [[ ${choice} == 5 ]]; then
-           lxc_os="efe16ae6eadb"
+           lxc_os="ubuntu/18.04"
 fi
 if [[ ${choice} == 6 ]]; then
-           lxc_os="0c88d136b87b"
+           lxc_os="ubuntu/21.10"
 fi
 if [[ ${choice} == 7 ]]; then
-           lxc_os="f4d8c598cc24"
+           lxc_os="alpine/3.15"
 fi
 if [[ ${choice} == 8 ]]; then
-           lxc_os="80b50b0984eb"
+           lxc_os="archlinux"
 fi
 if [[ ${choice} == 9 ]]; then
-           lxc_os="e2cce7a0a7ef"
+           lxc_os="openwrt/21.02"
 fi
 }
 
 lxc_establish()
 {
-echo "请输入纯数字！"
+echo "以下内容请输入纯数字！"
 read -p "请输入容器名称: " lxc_name
 read -p "cpu限制核数: " lxc_cpu
 read -p "运行内存限制(默认单位MB): " lxc_memory
@@ -955,7 +972,7 @@ if [[ -d '/snap/lxd' ]];then
 clear 
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2022.5.25"
+echo -e "更新时间: 2022.5.26"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.一键创建容器${Font}"
 echo -e "          ${Green}2.创建物理卷${Font}"
@@ -1007,7 +1024,7 @@ admin_cat3()
     clear 
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2022.5.25"
+echo -e "更新时间: 2022.5.26"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.一键删除${Font}"
 echo -e "          ${Green}2.删除网络${Font}"
@@ -1062,7 +1079,7 @@ admin_cat4()
 clear 
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2022.5.25"
+echo -e "更新时间: 2022.5.26"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.启动容器${Font}"
 echo -e "          ${Green}2.停止容器${Font}"
@@ -1131,7 +1148,7 @@ front_page()
 clear
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2022.5.25"
+echo -e "更新时间: 2022.5.26"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.安装LXD${Font}"
 echo -e "          ${Green}2.创建系统容器${Font}"
@@ -1155,7 +1172,7 @@ done
 case $choice in
     1)  snap_install
         lxd_install
-        sleep 3s
+        sleep 4s
         front_page
     ;;
     2)  admin_cat2
