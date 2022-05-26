@@ -12,7 +12,7 @@ bash lxdpro.sh
 ```
 
 ## 更新日志
-<P>2022.5.26&nbsp;&nbsp;修复Debian下安装LXD失败问题,修复镜像获取失败问题</p>
+<P>2022.5.26&nbsp;&nbsp;修复Debian下安装LXD失败问题,修复镜像获取失败问题,修复debian系统下创建失败问题</p>
 <P>2022.5.25&nbsp;&nbsp;新增一键开启系统容器的SSH和修改SSH密码,优化容器信息页面</p>
 <P>2022.5.23&nbsp;&nbsp;脚本完成，主体50％的功能</p>
 <br>
