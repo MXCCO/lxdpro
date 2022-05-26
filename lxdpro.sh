@@ -52,7 +52,7 @@ lxd_install(){
     sudo snap install lxd
     echo "LXD安装完成"        
     echo "需要重启才能使用后续脚本"
-    echo "重启后systemctl restart apparmor"
+    echo "重启后请再次执行步骤1确认问题"
     exit 0
     fi
 }
@@ -329,7 +329,7 @@ lxc init tuna-images:${lxc_os} ${lxc_name} -n ${lxc_name} -s ${lxc_name}>/dev/nu
 lxc_user_storage_create()
 {
 echo "开始创建物理卷 物理卷名: ${lxc_name}"
-lxc storage create ${lxc_name} btrfs>/dev/null 2>&1
+lxc storage create ${lxc_name} btrfs size=${lxc_disk}MB>/dev/null 2>&1
 }
 #创建简单网卡
 lxc_user_network_create()
