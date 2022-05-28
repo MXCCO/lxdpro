@@ -128,11 +128,6 @@ echo -e "网卡创建完成                 ${Green}[success]${Font}"
 
 
 
-
-
-
-
-
 #物理卷选择界面
 lxd_disk(){
 read -p "请输入磁盘类型(可选btrfs,LVM,ZFS 默认btrfs):" lxc_disk
@@ -961,6 +956,139 @@ fi
 }
 
 
+#容器端口转发
+lxd_forward_port_create()
+{
+clear
+lxd_name
+network_ip=`curl -4 ip.sb`
+if [[ -z "${network_ip}" ]]
+then
+    echo "无法判断你的公网ip,请手动输入"
+    read -p "请你输入你的公网ip: " network_ip
+    [[ -z "${network_ip}" ]] && lxd_forward_port
+else
+    echo -e "${Red}${network_ip}${Font}"
+    read -p "是否为你的公网ip(y,n): " lxc_ip_a
+fi
+case $lxc_ip_a in 
+	[yY])
+		
+		;;
+	[nN])
+		read -p "请你输入你的公网ip: " network_ip
+		;;
+	*)
+		echo "请输入正确选项"
+        exit 0
+esac
+
+if [[ -z "${network_ip}" ]] 
+then
+    echo "不能为空重新输入"
+    sleep 3s
+    lxd_forward_port
+fi
+
+echo -e "${yellow}端口可选单个端口多个端口,也可以指定一个范围,单端口直接输入端口号就行了${Font}"
+echo -e "${yellow}多端口之间用英文逗号相隔如 80,8888;端口范围为起始端口例如 10010-10019 当然也可以组合使用如 1022,10010-10019${Font}"
+echo -e "${yellow}母鸡端口和容器端口填法一致,母鸡的第一端口对应容器第一个端口,第二个对应第二个,以此类推${Font}"
+read -p "请输入你母鸡的端口: " listen_port
+read -p "请输入你的容器的端口: " target_address
+lxc_network_forward=`lxc config show ${lxc_name} | grep 'network:' | awk '{print $2}'`
+if [ -z "$lxc_network_forward" ];then
+    lxc_network_forward=`lxc profile show ${lxc_name} | grep -A 0 'network:' | awk '{print $2}'`
+fi
+lxc_networok_ip=`lxc info ${lxc_name} | sed -n '/eth0:/,/inet:/p' | grep 'inet' | awk '{print $2}'| sed 's/.\{3\}$//'`
+lxc network forward create ${lxc_network_forward} ${network_ip}>/dev/null 2>&1
+lxc network forward port add ${lxc_network_forward} ${network_ip} tcp ${listen_port} ${lxc_networok_ip} ${target_address} 
+echo "端口转发添加完成"
+}
+
+
+
+#删除端口转发
+lxd_forward_port_delete()
+{
+clear
+lxd_name
+network_ip=`curl -4 ip.sb`
+if [[ -z "${network_ip}" ]]
+then
+    echo "无法判断你的公网ip,请手动输入"
+    read -p "请你输入你的公网ip: " network_ip
+    [[ -z "${network_ip}" ]] && lxd_forward_port
+else
+    echo -e "${Red}${network_ip}${Font}"
+    read -p "是否为你的公网ip(y,n): " lxc_ip_a
+fi
+case $lxc_ip_a in 
+	[yY])
+		
+		;;
+	[nN])
+		read -p "请你输入你的公网ip: " network_ip
+		;;
+	*)
+		echo "请输入正确选项"
+        exit 0
+esac
+
+if [[ -z "${network_ip}" ]] 
+then
+    echo "不能为空重新输入"
+    sleep 3s
+    lxd_forward_port
+fi
+read -p "请输入删除母鸡的端口或者端口范围: " listen_port
+if [ -z "$lxc_network_forward" ];then
+    lxc_network_forward=`lxc profile show ${lxc_name} | grep -A 0 'network:' | awk '{print $2}'`
+fi
+lxc network forward port remove ${lxc_network_forward} ${network_ip} tcp ${listen_port}
+}
+
+#查看端口转发
+
+lxc_cat_forward()
+{
+clear
+lxd_name
+network_ip=`curl -4 ip.sb`
+if [[ -z "${network_ip}" ]]
+then
+    echo "无法判断你的公网ip,请手动输入"
+    read -p "请你输入你的公网ip: " network_ip
+    [[ -z "${network_ip}" ]] && lxd_forward_port
+else
+    echo -e "${Red}${network_ip}${Font}"
+    read -p "是否为你的公网ip(y,n): " lxc_ip_a
+fi
+case $lxc_ip_a in 
+	[yY])
+		
+		;;
+	[nN])
+		read -p "请你输入你的公网ip: " network_ip
+		;;
+	*)
+		echo "请输入正确选项"
+        exit 0
+esac
+
+if [[ -z "${network_ip}" ]] 
+then
+    echo "不能为空重新输入"
+    sleep 3s
+    lxd_forward_port
+fi
+if [ -z "$lxc_network_forward" ];then
+    lxc_network_forward=`lxc profile show ${lxc_name} | grep -A 0 'network:' | awk '{print $2}'`
+fi
+lxc_networok_ip=`lxc info ${lxc_name} | sed -n '/eth0:/,/inet:/p' | grep 'inet' | awk '{print $2}'| sed 's/.\{3\}$//'`
+printf "%0s %15s %13s %15s\n" 类型 公网端口 内网端口 内网地址
+lxc network forward show ${lxc_network_forward} ${network_ip} | grep -B 3 ${lxc_networok_ip} | awk '{print $2}'| awk '{printf "%s     " ,$1}'| sed 's/tcp/\ntcp/g' | grep tcp
+}
+
 
 
 
@@ -972,7 +1100,7 @@ if [[ -d '/snap/lxd' ]];then
 clear 
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2022.5.26"
+echo -e "更新时间: 2022.5.28"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.一键创建容器${Font}"
 echo -e "          ${Green}2.创建物理卷${Font}"
@@ -1024,7 +1152,7 @@ admin_cat3()
     clear 
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2022.5.26"
+echo -e "更新时间: 2022.5.28"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.一键删除${Font}"
 echo -e "          ${Green}2.删除网络${Font}"
@@ -1079,7 +1207,7 @@ admin_cat4()
 clear 
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2022.5.26"
+echo -e "更新时间: 2022.5.28"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.启动容器${Font}"
 echo -e "          ${Green}2.停止容器${Font}"
@@ -1133,13 +1261,45 @@ case $choice in
         lxc_root_passwd
     ;;
 esac
-
-
-
 }
 
 
+admin_cat5()
+{
+clear 
+echo -e "————————————————By'MXCCO———————————————"
+echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
+echo -e "更新时间: 2022.5.28"
+echo -e "———————————————————————————————————————"
+echo -e "          ${Green}1.创建端口转发${Font}"
+echo -e "          ${Green}2.删除端口转发${Font}"
+echo -e "          ${Green}3.查看容器端口转发${Font}"
+echo -e "          ${Green}0.返回首页${Font}"
 
+
+
+
+while :; do echo
+		read -p "请输入数字选择: " choice
+		if [[ ! $choice =~ ^[0-3]$ ]]
+         then
+				echo -ne "     ${Red}输入错误, 请输入正确的数字!${Font}"
+		 else
+				break   
+		fi
+done
+
+case $choice in
+    0)  front_page
+    ;;
+    1)  lxd_forward_port_create
+    ;;
+    2)  lxd_forward_port_delete
+    ;;
+    3)  lxc_cat_forward
+    ;;
+esac
+}
 
 
 #首页
@@ -1148,13 +1308,14 @@ front_page()
 clear
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2022.5.26"
+echo -e "更新时间: 2022.5.28"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.安装LXD${Font}"
 echo -e "          ${Green}2.创建系统容器${Font}"
 echo -e "          ${Green}3.删除系统容器${Font}"
 echo -e "          ${Green}4.管理系统容器${Font}"
-echo -e "          ${Green}5.更新脚本${Font}"
+echo -e "          ${Green}5.容器端口转发${Font}"
+echo -e "          ${Green}6.更新脚本${Font}"
 
 
 
@@ -1168,7 +1329,6 @@ while :; do echo
 		fi
 done
 
-
 case $choice in
     1)  snap_install
         lxd_install
@@ -1181,7 +1341,9 @@ case $choice in
     ;;
     4)  admin_cat4
     ;;
-    5)  wget -N --no-check-certificate https://raw.githubusercontent.com/MXCCO/lxdpro/main/lxdpro.sh
+    5)  admin_cat5
+    ;;
+    6)  wget -N --no-check-certificate https://raw.githubusercontent.com/MXCCO/lxdpro/main/lxdpro.sh
         chmod +x lxdpro.sh
         echo "更新完成3秒后执行新脚本"
         sleep 3s
