@@ -1321,7 +1321,7 @@ echo -e "          ${Green}6.更新脚本${Font}"
 
 while :; do echo
 		read -p "请输入数字选择: " choice
-		if [[ ! $choice =~ ^[1-5]$ ]]
+		if [[ ! $choice =~ ^[1-6]$ ]]
          then
 				echo -ne "     ${Red}输入错误, 请输入正确的数字!${Font}"
 		 else
