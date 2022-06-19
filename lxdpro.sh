@@ -1304,7 +1304,7 @@ lxc_corn()
 clear
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2022.5.28"
+echo -e "更新时间: 2022.6.29"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.定时备份指定容器${Font}"
 echo -e "          ${Green}2.定时备份所有容器${Font}"
@@ -1342,7 +1342,7 @@ if [[ -d '/snap/lxd' ]];then
 clear 
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2022.5.28"
+echo -e "更新时间: 2022.6.29"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.一键创建容器${Font}"
 echo -e "          ${Green}2.创建物理卷${Font}"
@@ -1394,7 +1394,7 @@ admin_cat3()
     clear 
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2022.5.28"
+echo -e "更新时间: 2022.6.29"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.一键删除${Font}"
 echo -e "          ${Green}2.删除网络${Font}"
@@ -1449,7 +1449,7 @@ admin_cat4()
 clear 
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2022.5.28"
+echo -e "更新时间: 2022.6.29"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.启动容器${Font}"
 echo -e "          ${Green}2.停止容器${Font}"
@@ -1511,7 +1511,7 @@ admin_cat5()
 clear 
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2022.5.28"
+echo -e "更新时间: 2022.6.29"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.创建端口转发${Font}"
 echo -e "          ${Green}2.删除端口转发${Font}"
@@ -1548,7 +1548,7 @@ admin_cat6()
 clear
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2022.5.28"
+echo -e "更新时间: 2022.6.29"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.备份容器${Font}"
 echo -e "          ${Green}2.导入备份${Font}"
@@ -1581,7 +1581,7 @@ front_page()
 clear
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2022.5.28"
+echo -e "更新时间: 2022.6.29"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.安装LXD${Font}"
 echo -e "          ${Green}2.创建系统容器${Font}"
