@@ -1088,6 +1088,248 @@ lxc_networok_ip=`lxc info ${lxc_name} | sed -n '/eth0:/,/inet:/p' | grep 'inet' 
 printf "%0s %15s %13s %15s\n" 类型 公网端口 内网端口 内网地址
 lxc network forward show ${lxc_network_forward} ${network_ip} | grep -B 3 ${lxc_networok_ip} | awk '{print $2}'| awk '{printf "%s     " ,$1}'| sed 's/tcp/\ntcp/g' | grep tcp
 }
+#备份容器
+lxc_backup()
+{
+read -p "请输入要备份的容器名: " lxc_name
+read -p "请输入需要备份到目录的绝对路径地址(例如/root): " path
+echo -e "正在备份容器中...."
+lxc export ${lxc_name} ${path}/${lxc_name} --compression none>/dev/null 2>&1
+if [ $? -eq 0 ];then
+echo -e "备份完成,你的文件保存在 ${Red}${path}/${lxc_name}${Font}"
+else
+echo -e "${Red}备份失败请检查容器是否存在,或者路径是否填写正确${Font}"
+exit 0
+fi
+}
+#导入容器
+lxc_import()
+{
+read -p "请输入备份文件的绝对路径(例如/root/文件名): " path
+read -p "请输入新的磁盘大小限制(需要填写单位,GB或者MB)" lxc_disk_size
+lxc_name=${path##*/}
+lxc network create ${lxc_name} -t bridge>/dev/null 2>&1
+lxc storage create ${lxc_name} btrfs size=${lxc_disk_size}>/dev/null 2>&1
+lxc import ${path} ${lxc_name} -s ${lxc_name} 2>/root/lxc-export
+lxc_profile=`cat /root/lxc-export | grep "Failed importing backup: Failed loading profiles for instance: Failed loading profile" | awk '{print $13}' | tr -cd "[0-9][a-z][A-Z]"`
+lxc profile create ${lxc_profile}>/dev/null 2>&1
+cat <<EOF | lxc profile edit ${lxc_profile}>/dev/null 2>&1
+    {
+    "config": {
+    },
+    "description": "Default LXD profile",
+    "devices": {
+    "eth0": {
+      "name": "eth0",
+      "network": "${lxc_name}",
+      "type": "nic"
+    },
+    "root": {
+      "path": "/",
+      "pool": "${lxc_name}",
+      "type": "disk"
+    }
+    },
+    "name": "${lxc_name}",
+    "used_by": []
+    }
+EOF
+lxc import ${path} ${lxc_name} -s ${lxc_name} 2>/root/lxc-export
+if [ $? -eq 0 ];then
+    echo "容器导入成功！"
+    exit 0
+    else
+    LXC_FILE="/root/lxc-export"
+    LXC_STR="Failed importing backup: Failed loading profiles for instance: Failed loading profile"
+    LXC_STR2="Storage pool not found: Storage pool not found"
+    LXC_STR3="Error: Create instance from backup: Cannot restore volume, already exists on target"
+    if grep "${LXC_STR}" ${LXC_FILE} >/dev/null;then
+    lxc_profile=`cat /root/lxc-export | grep "Failed importing backup: Failed loading profiles for instance: Failed loading profile" | awk '{print $13}' | tr -cd "[0-9][a-z][A-Z]"`
+    echo "导入容器失败！请尝试创建名为${lxc_profile}的模板"
+    exit 0
+    fi
+    if grep "${LXC_STR2}" ${LXC_FILE} >/dev/null;then
+    echo "导入容器失败！你输入的磁盘大小有误！"
+    exit 0
+    fi
+    if grep "${LXC_STR3}" ${LXC_FILE} >/dev/null;then
+    echo "导入失败出现同名容器,请先删除"
+    exit 0
+    fi
+    echo "容器导入失败！"
+fi
+}
+#自动定时备份
+lxc_corn_time()
+{
+clear
+echo "1.分钟"
+echo "2.小时"
+echo "3.天"
+while :; do echo
+        read -p "请输入定时任务的时间隔单位: " lxc_time
+        if [[ ! $lxc_time =~ ^[1-3]$ ]]
+        then
+				echo -ne "     ${Red}输入错误, 请输入正确的数字!${Font}"
+		else
+				break   
+		fi
+done
+#分钟
+if [ ${lxc_time} -eq 1 ];then
+read -p "每隔多少分钟备份一次: " lxc_time
+read -p "请输入要备份的容器名: " lxc_name
+read -p "请输入需要备份到目录的绝对路径地址(例如/root): " path
+cat << EOF >/etc/cron.d/lxc_backups
+SHELL=/bin/bash
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+MAILTO=root
+EOF
+sed -i '4,$d' /etc/cron.d/lxc_backups
+echo "${lxc_time} * * * * root /snap/bin/lxc export ${lxc_name} ${path}/${lxc_name} --compression none" >>/etc/cron.d/lxc_backups
+time=`date -d "${lxc_time} minute" +%Y-%m-%d_%X`
+echo "设置成功！文件自动备份在 ${path} 目录下,下次自动备份日期为: ${time}"
+exit 0
+fi
+#小时
+if [ ${lxc_time} -eq 2 ];then
+read -p "每隔多少小时备份一次: " lxc_time
+read -p "请输入要备份的容器名: " lxc_name
+read -p "请输入需要备份到目录的绝对路径地址(例如/root): " path
+cat << EOF >/etc/cron.d/lxc_backups
+SHELL=/bin/bash
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+MAILTO=root
+EOF
+sed -i '4,$d' /etc/cron.d/lxc_backups
+echo "* ${lxc_time} * * * root /snap/bin/lxc export ${lxc_name} ${path}/${lxc_name} --compression none" >>/etc/cron.d/lxc_backups
+time=`date -d "${lxc_time} hours" +%Y-%m-%d_%X`
+echo "设置成功！文件自动备份在 ${path} 目录下,下次自动备份日期为: ${time}"
+exit 0
+fi
+#天
+if [ ${lxc_time} -eq 3 ];then
+read -p "每隔多少天备份一次: " lxc_time
+read -p "请输入要备份的容器名: " lxc_name
+read -p "请输入需要备份到目录的绝对路径地址(例如/root): " path
+cat << EOF >/etc/cron.d/lxc_backups
+SHELL=/bin/bash
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+MAILTO=root
+EOF
+sed -i '4,$d' /etc/cron.d/lxc_backups
+echo "* * ${lxc_time} * * root /snap/bin/lxc export ${lxc_name} ${path}/${lxc_name} --compression none" >>/etc/cron.d/lxc_backups
+time=`date -d "${lxc_time} days" +%Y-%m-%d_%X`
+echo "设置成功！文件自动备份在 ${path} 目录下,下次自动备份日期为: ${time}"
+exit 0
+fi
+}
+
+#定时所有
+lxc_corn_time_all()
+{
+clear
+echo "1.分钟"
+echo "2.小时"
+echo "3.天"
+while :; do echo
+        read -p "请输入定时任务的时间隔单位: " lxc_time
+        if [[ ! $lxc_time =~ ^[1-3]$ ]]
+        then
+				echo -ne "     ${Red}输入错误, 请输入正确的数字!${Font}"
+		else
+				break   
+		fi
+done
+#分钟
+if [ ${lxc_time} -eq 1 ];then
+read -p "每隔多少分钟备份一次: " lxc_time
+read -p "请输入需要备份到目录的绝对路径地址(例如/root): " path
+cat << EOF >/etc/cron.d/lxc_backups
+SHELL=/bin/bash
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+MAILTO=root
+EOF
+for lxc_name in $(lxc ls -c n -f csv)
+do
+echo "${lxc_time} * * * * root /snap/bin/lxc export ${lxc_name} ${path}/${lxc_name} --compression none" >>/etc/cron.d/lxc_backups
+done
+time=`date -d "${lxc_time} minute" +%Y-%m-%d_%X`
+echo "设置成功！文件自动备份在 ${path} 目录下,下次自动备份日期为: ${time}"
+exit 0
+fi
+#小时
+if [ ${lxc_time} -eq 2 ];then
+read -p "每隔多少小时备份一次: " lxc_time
+read -p "请输入需要备份到目录的绝对路径地址(例如/root): " path
+cat << EOF >/etc/cron.d/lxc_backups
+SHELL=/bin/bash
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+MAILTO=root
+EOF
+for lxc_name in $(lxc ls -c n -f csv)
+do
+echo "* ${lxc_time} * * * root /snap/bin/lxc export ${lxc_name} ${path}/${lxc_name} --compression none" >>/etc/cron.d/lxc_backups
+done
+time=`date -d "${lxc_time} hours" +%Y-%m-%d_%X`
+echo "设置成功！文件自动备份在 ${path} 目录下,下次自动备份日期为: ${time}"
+exit 0
+fi
+#每天
+if [ ${lxc_time} -eq 3 ];then
+read -p "每隔多少天备份一次: " lxc_time
+read -p "请输入需要备份到目录的绝对路径地址(例如/root): " path
+cat << EOF >/etc/cron.d/lxc_backups
+SHELL=/bin/bash
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+MAILTO=root
+EOF
+for lxc_name in $(lxc ls -c n -f csv)
+do
+echo "* * ${lxc_time} * * root /snap/bin/lxc export ${lxc_name} ${path}/${lxc_name} --compression none" >>/etc/cron.d/lxc_backups
+done
+time=`date -d "${lxc_time} days" +%Y-%m-%d_%X`
+echo "设置成功！文件自动备份在 ${path} 目录下,下次自动备份日期为: ${time}"
+exit 0
+fi
+
+} 
+
+
+
+
+
+lxc_corn()
+{
+clear
+echo -e "————————————————By'MXCCO———————————————"
+echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
+echo -e "更新时间: 2022.5.28"
+echo -e "———————————————————————————————————————"
+echo -e "          ${Green}1.定时备份指定容器${Font}"
+echo -e "          ${Green}2.定时备份所有容器${Font}"
+echo -e "          ${Green}3.删除所有定时${Font}"
+
+while :; do echo
+		read -p "请输入数字选择: " choice
+		if [[ ! $choice =~ ^[1-3]$ ]]
+         then
+				echo -ne "     ${Red}输入错误, 请输入正确的数字!${Font}"
+		 else
+				break   
+		fi
+done
+
+case $choice in
+    1)  lxc_corn_time
+    ;;
+    2)  lxc_corn_time_all
+    ;;
+    3)  rm -f /etc/cron.d/lxc_backups
+        echo "定时任务已删除"
+    ;;
+esac
+}
 
 
 
@@ -1301,7 +1543,38 @@ case $choice in
 esac
 }
 
+admin_cat6()
+{
+clear
+echo -e "————————————————By'MXCCO———————————————"
+echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
+echo -e "更新时间: 2022.5.28"
+echo -e "———————————————————————————————————————"
+echo -e "          ${Green}1.备份容器${Font}"
+echo -e "          ${Green}2.导入备份${Font}"
+echo -e "          ${Green}3.定时备份容器${Font}"
 
+
+while :; do echo
+		read -p "请输入数字选择: " choice
+		if [[ ! $choice =~ ^[1-7]$ ]]
+         then
+				echo -ne "     ${Red}输入错误, 请输入正确的数字!${Font}"
+		 else
+				break   
+		fi
+done
+
+case $choice in
+    1)  lxc_backup
+    ;;
+    2)  lxc_import
+        #lxc_import2
+    ;;
+    3)  lxc_corn
+    ;;
+esac
+}
 #首页
 front_page()
 {
@@ -1315,13 +1588,14 @@ echo -e "          ${Green}2.创建系统容器${Font}"
 echo -e "          ${Green}3.删除系统容器${Font}"
 echo -e "          ${Green}4.管理系统容器${Font}"
 echo -e "          ${Green}5.容器端口转发${Font}"
-echo -e "          ${Green}6.更新脚本${Font}"
+echo -e "          ${Green}6.备份和导入容器${Font}"
+echo -e "          ${Green}7.更新脚本${Font}"
 
 
 
 while :; do echo
 		read -p "请输入数字选择: " choice
-		if [[ ! $choice =~ ^[1-6]$ ]]
+		if [[ ! $choice =~ ^[1-7]$ ]]
          then
 				echo -ne "     ${Red}输入错误, 请输入正确的数字!${Font}"
 		 else
@@ -1343,7 +1617,9 @@ case $choice in
     ;;
     5)  admin_cat5
     ;;
-    6)  wget -N --no-check-certificate https://raw.githubusercontent.com/MXCCO/lxdpro/main/lxdpro.sh
+    6)  admin_cat6
+    ;;
+    7)  wget -N --no-check-certificate https://raw.githubusercontent.com/MXCCO/lxdpro/main/lxdpro.sh
         chmod +x lxdpro.sh
         echo "更新完成3秒后执行新脚本"
         sleep 3s
