@@ -1186,7 +1186,7 @@ PATH=/sbin:/bin:/usr/sbin:/usr/bin
 MAILTO=root
 EOF
 sed -i '4,$d' /etc/cron.d/lxc_backups
-echo "${lxc_time} * * * * root /snap/bin/lxc export ${lxc_name} ${path}/${lxc_name} --compression none" >>/etc/cron.d/lxc_backups
+echo "*/${lxc_time} * * * * root /snap/bin/lxc export ${lxc_name} ${path}/${lxc_name} --compression none" >>/etc/cron.d/lxc_backups
 time=`date -d "${lxc_time} minute" +%Y-%m-%d_%X`
 echo "设置成功！文件自动备份在 ${path} 目录下,下次自动备份日期为: ${time}"
 exit 0
@@ -1202,7 +1202,7 @@ PATH=/sbin:/bin:/usr/sbin:/usr/bin
 MAILTO=root
 EOF
 sed -i '4,$d' /etc/cron.d/lxc_backups
-echo "* ${lxc_time} * * * root /snap/bin/lxc export ${lxc_name} ${path}/${lxc_name} --compression none" >>/etc/cron.d/lxc_backups
+echo "* */${lxc_time} * * * root /snap/bin/lxc export ${lxc_name} ${path}/${lxc_name} --compression none" >>/etc/cron.d/lxc_backups
 time=`date -d "${lxc_time} hours" +%Y-%m-%d_%X`
 echo "设置成功！文件自动备份在 ${path} 目录下,下次自动备份日期为: ${time}"
 exit 0
@@ -1218,7 +1218,7 @@ PATH=/sbin:/bin:/usr/sbin:/usr/bin
 MAILTO=root
 EOF
 sed -i '4,$d' /etc/cron.d/lxc_backups
-echo "* * ${lxc_time} * * root /snap/bin/lxc export ${lxc_name} ${path}/${lxc_name} --compression none" >>/etc/cron.d/lxc_backups
+echo "* * */${lxc_time} * * root /snap/bin/lxc export ${lxc_name} ${path}/${lxc_name} --compression none" >>/etc/cron.d/lxc_backups
 time=`date -d "${lxc_time} days" +%Y-%m-%d_%X`
 echo "设置成功！文件自动备份在 ${path} 目录下,下次自动备份日期为: ${time}"
 exit 0
@@ -1252,7 +1252,7 @@ MAILTO=root
 EOF
 for lxc_name in $(lxc ls -c n -f csv)
 do
-echo "${lxc_time} * * * * root /snap/bin/lxc export ${lxc_name} ${path}/${lxc_name} --compression none" >>/etc/cron.d/lxc_backups
+echo "*/${lxc_time} * * * * root /snap/bin/lxc export ${lxc_name} ${path}/${lxc_name} --compression none" >>/etc/cron.d/lxc_backups
 done
 time=`date -d "${lxc_time} minute" +%Y-%m-%d_%X`
 echo "设置成功！文件自动备份在 ${path} 目录下,下次自动备份日期为: ${time}"
@@ -1269,7 +1269,7 @@ MAILTO=root
 EOF
 for lxc_name in $(lxc ls -c n -f csv)
 do
-echo "* ${lxc_time} * * * root /snap/bin/lxc export ${lxc_name} ${path}/${lxc_name} --compression none" >>/etc/cron.d/lxc_backups
+echo "* */${lxc_time} * * * root /snap/bin/lxc export ${lxc_name} ${path}/${lxc_name} --compression none" >>/etc/cron.d/lxc_backups
 done
 time=`date -d "${lxc_time} hours" +%Y-%m-%d_%X`
 echo "设置成功！文件自动备份在 ${path} 目录下,下次自动备份日期为: ${time}"
@@ -1286,7 +1286,7 @@ MAILTO=root
 EOF
 for lxc_name in $(lxc ls -c n -f csv)
 do
-echo "* * ${lxc_time} * * root /snap/bin/lxc export ${lxc_name} ${path}/${lxc_name} --compression none" >>/etc/cron.d/lxc_backups
+echo "* * */${lxc_time} * * root /snap/bin/lxc export ${lxc_name} ${path}/${lxc_name} --compression none" >>/etc/cron.d/lxc_backups
 done
 time=`date -d "${lxc_time} days" +%Y-%m-%d_%X`
 echo "设置成功！文件自动备份在 ${path} 目录下,下次自动备份日期为: ${time}"
@@ -1575,6 +1575,89 @@ case $choice in
     ;;
 esac
 }
+
+admin_cat7()
+{
+clear
+cat << EOF >/etc/cron.d/lxc_telegram_bot
+SHELL=/bin/bash
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+MAILTO=root
+EOF
+echo "1.分钟"
+echo "2.小时"
+echo "3.天"
+while :; do echo
+        read -p "请选择定时任务的时间隔单位: " lxc_time
+        if [[ ! $lxc_time =~ ^[1-3]$ ]]
+        then
+				echo -ne "     ${Red}输入错误, 请输入正确的数字!${Font}"
+		else
+				break   
+		fi
+done
+case $lxc_time in
+    1)  read -p "每隔多少分钟提醒一次: " lxc_time
+        echo "*/${lxc_time} * * * * root /usr/bin/bash /var/log/lxc_telegram.sh" >>/etc/cron.d/lxc_telegram_bot
+    ;;
+    2)  read -p "每隔多少小时提醒一次: " lxc_time
+        echo "* */${lxc_time} * * * root /usr/bin/bash /var/log/lxc_telegram.sh" >>/etc/cron.d/lxc_telegram_bot
+    ;;
+    3)  read -p "每隔多少天提醒一次: " lxc_time
+        echo "* * */${lxc_time} * * root /usr/bin/bash /var/log/lxc_telegram.sh" >>/etc/cron.d/lxc_telegram_bot
+    ;;
+esac
+echo "tg搜索@getuseridbot 获取id"
+read -p "请输入账号id: " tg_id
+echo "tg搜索@BotFather 输入/newbot 创建机器人获取token"
+read -p "请输入机器人token API: " tg_bot_token
+cat << EOF > /var/log/lxc_telegram.sh
+#!/bin/bash
+SHELL=/bin/bash
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+MAILTO=root
+rm -f /var/log/lxc_bot.log
+for para in \$(/snap/bin/lxc ls -c nu -f compact | grep -E '([1-9][0-9][0-9][0-9][0-9][0-9]*)' | awk '{print \$1}')
+do
+echo "名称: \${para}">> /var/log/lxc_bot.log
+echo "类型: CPU占用高">> /var/log/lxc_bot.log
+echo "状态: \$(/snap/bin/lxc info \${para} | grep Status: | awk '{print \$2}')">> /var/log/lxc_bot.log
+echo "">> /var/log/lxc_bot.log
+done
+if [[ ! -n \${para} ]];then 
+echo eixt
+else
+message_text="
+⚠️警告！有容器占用大量资源
+——————————————— 
+\$(cat /var/log/lxc_bot.log)
+——————————————— "   #通知内容
+MODE='HTML' 
+URL="https://api.telegram.org/bot${tg_bot_token}/sendMessage"
+curl -s -o /dev/null -X POST \$URL -d chat_id=${tg_id} -d text="\${message_text}" 
+fi
+rm -f /var/log/lxc_bot.log
+for para in \$(/snap/bin/lxc ls -c ns -f compact | grep "STOPPED" | awk '{print \$1}')
+do
+echo "名称: \${para}">> /var/log/lxc_bot.log
+echo "离线时间: \$(/snap/bin/lxc info \${para} | grep 'Last Used:' | awk '{print \$3,\$4}')">> /var/log/lxc_bot.log
+echo "">> /var/log/lxc_bot.log
+done
+if [[ ! -n \${para} ]];then 
+echo eixt
+else
+message_text="
+⚠️警告！有容器停止了
+——————————————— 
+\$(cat /var/log/lxc_bot.log)
+——————————————— "   #通知内容
+MODE='HTML' 
+URL="https://api.telegram.org/bot${tg_bot_token}/sendMessage"
+curl -s -o /dev/null -X POST \$URL -d chat_id=${tg_id} -d text="\${message_text}" 
+fi
+EOF
+}
+
 #首页
 front_page()
 {
@@ -1589,13 +1672,14 @@ echo -e "          ${Green}3.删除系统容器${Font}"
 echo -e "          ${Green}4.管理系统容器${Font}"
 echo -e "          ${Green}5.容器端口转发${Font}"
 echo -e "          ${Green}6.备份和导入容器${Font}"
-echo -e "          ${Green}7.更新脚本${Font}"
+echo -e "          ${Green}7.tg机器人提醒${Font}"
+echo -e "          ${Green}8.更新脚本${Font}"
 
 
 
 while :; do echo
 		read -p "请输入数字选择: " choice
-		if [[ ! $choice =~ ^[1-7]$ ]]
+		if [[ ! $choice =~ ^[1-8]$ ]]
          then
 				echo -ne "     ${Red}输入错误, 请输入正确的数字!${Font}"
 		 else
@@ -1619,7 +1703,9 @@ case $choice in
     ;;
     6)  admin_cat6
     ;;
-    7)  wget -N --no-check-certificate https://raw.githubusercontent.com/MXCCO/lxdpro/main/lxdpro.sh
+    7)  admin_cat7
+    ;;
+    8)  wget -N --no-check-certificate https://raw.githubusercontent.com/MXCCO/lxdpro/main/lxdpro.sh
         chmod +x lxdpro.sh
         echo "更新完成3秒后执行新脚本"
         sleep 3s
