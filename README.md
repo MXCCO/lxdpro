@@ -12,6 +12,7 @@ bash lxdpro.sh
 ```
 
 ## 更新日志
+<P>2022.6.19&nbsp;&nbsp;新增telegram bot 机器人提醒,目前支持容器CPU高占用提醒和容器离线提醒</p>
 <P>2022.6.19&nbsp;&nbsp;新增容器备份与导入,新增定时自动备份容器,定时自动备份所有容器,配合rcloud实现定时备份到网盘</p>
 <P>2022.5.28&nbsp;&nbsp;修复一些报错问题,新增容器内网端口转发,可以使用范围多端口转发</p>
 <P>2022.5.26&nbsp;&nbsp;修复Debian下安装LXD失败问题,修复镜像获取失败问题,修复debian系统下创建失败问题</p>
@@ -58,6 +59,7 @@ LXC 是 Linux 内核包含特性的用户空间接口。通过强大的 API 和�
 * 容器与宿主机使用同一个内核，性能损失小
 * 轻量级隔离，每个容器拥有自己的系统互不影响
 * 容器可以共享地使用宿主机的所有计算资源
+* telegram bot 自动提醒报警
 ## 脚本截图
 <P>首页：</p>
 <br><img src="https://github.com/MXCCO/lxdpro/blob/main/%E6%88%AA%E5%9B%BE/LXD.PNG?raw=true">
