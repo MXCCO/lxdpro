@@ -1,8 +1,8 @@
 # 这是一个什么脚本？
 <br>这是个能开系统容器的脚本,类似于虚拟机，俗称开“小鸡”,小白也能开小鸡,此脚本基于Ubuntu/Ddebian的snap安装,目前仅支持Ubuntu/Debian系统,其他系统看情况后续再做更新，目前测试可以搭配极光面板转发内网ip实现NAT.
-<br>大部分VPS商的Ubuntu镜像包都有自带snap包和LXD可以无需在安装
+<br>大部分VPS商的Ubuntu镜像包都有自带snap包和LXD可以无需在安装,国内机器把系统源调成国内也可以使用。
 # 为什么要写这个脚本？
-<br>有天我在LOC的论坛上发现有找人合租VPS的意向,但是对方说只能用docker开车,我就翻了记录很多VPS合租都用docker,但是我更需要是一个独立的系统,所以萌生了写这个脚本。
+<br>有天我在LOC的论坛上发现有找人合租VPS的意向,但是对方说只能用docker开车,我就翻了记录很多VPS合租或者端口转发都用docker或者咸蛋面板转发,但是我更需要是一个独立的系统,所以萌生了写这个脚本。
 ```
 wget -N --no-check-certificate https://raw.githubusercontent.com/MXCCO/lxdpro/main/lxdpro.sh && bash lxdpro.sh
 ```
