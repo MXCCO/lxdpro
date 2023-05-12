@@ -18,7 +18,7 @@ snap_detect(){
     if [[ "$lxd_lxc_detect" =~ command not found.* ]]
     then
     echo "lxd已安装但是无法使用，请尝试重启"
-    exit
+    exit 0
     elif [[ "$lxd_lxc_detect" =~ "snap-update-ns failed with code1".* ]]
     then
     systemctl restart apparmor
