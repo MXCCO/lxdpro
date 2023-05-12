@@ -31,7 +31,7 @@ snap_install(){
     if [[ "$lxd_snap" =~ ^snap.* ]]&&[[ "$lxd_snapd" =~ ^snapd.* ]]
     then
     echo "snap已安装"
-    exit 0
+    lxd_install
     else
     echo "开始安装snap"
     sudo apt update
@@ -47,6 +47,7 @@ lxd_install(){
     then
     echo "lxd已安装"
     snap_detect
+    exit 0
     else
     echo "开始安装LXD"
     sudo snap install core
@@ -1690,7 +1691,7 @@ done
 
 case $choice in
     1)  snap_install
-        lxd_install
+
         sleep 4s
         front_page
     ;;
