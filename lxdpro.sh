@@ -31,6 +31,7 @@ snap_install(){
     if [[ "$lxd_snap" =~ ^snap.* ]]&&[[ "$lxd_snapd" =~ ^snapd.* ]]
     then
     echo "snap已安装"
+    exit 0
     else
     echo "开始安装snap"
     sudo apt update
