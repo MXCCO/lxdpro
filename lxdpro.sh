@@ -39,6 +39,7 @@ snap_install(){
     sudo apt update
     sudo apt -y install snap
     sudo apt -y install snapd
+    lxd_install
     fi
 }
 # 安装LXD
