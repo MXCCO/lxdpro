@@ -836,8 +836,8 @@ fi
 
 lxc_establish()
 {
-echo "以下内容请输入纯数字！"
 read -p "请输入容器名称: " lxc_name
+echo "以下内容请输入纯数字！"
 read -p "cpu限制核数: " lxc_cpu
 read -p "运行内存限制(默认单位MB): " lxc_memory
 read -p "硬盘大小限制(默认单位MB): " lxc_disk
