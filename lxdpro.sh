@@ -45,7 +45,7 @@ snap_install(){
 lxd_install(){
     snap_core22=`snap list core22`
     snap_lxd=`snap list lxd`
-    if [[ "$snap_core22" =~ core20.* ]]&&[[ "$snap_lxd" = lxd ]]
+    if [[ "$snap_core22" =~ core22.* ]]&&[[ "$snap_lxd" =~ lxd.* ]]
     then
     echo "lxd已安装"
     snap_detect
