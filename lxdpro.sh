@@ -32,6 +32,7 @@ snap_install(){
     then
     echo "snap已安装"
     lxd_install
+    exit 0
     else
     echo "开始安装snap"
     sudo apt update
