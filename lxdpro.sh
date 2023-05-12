@@ -17,7 +17,7 @@ snap_detect(){
     lxd_lxc_detect=`lxc list`
     if [ $? -ne 0 ]
     then
-    clear
+    echo 'clear'
     echo "lxd已安装但是无法使用，请尝试重启"
     exit 0
     elif [[ "$lxd_lxc_detect" =~ "snap-update-ns failed with code1".* ]]
