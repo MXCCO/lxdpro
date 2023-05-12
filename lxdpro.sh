@@ -21,6 +21,7 @@ snap_detect(){
     snap restart lxd
     else
     echo "环境没问题"
+    exit 0
     fi
     
 }
@@ -32,7 +33,7 @@ snap_install(){
     then
     echo "snap已安装"
     lxd_install
-    exit 0
+
     else
     echo "开始安装snap"
     sudo apt update
