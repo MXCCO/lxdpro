@@ -80,6 +80,15 @@ https://github.com/spiritLHLS/lxc
 <br><img src="https://github.com/MXCCO/lxdpro/blob/main/%E6%88%AA%E5%9B%BE/LXD5.PNG?raw=true">
 <P>安装镜像选择页面：</p>
 <br><img src="https://github.com/MXCCO/lxdpro/blob/main/%E6%88%AA%E5%9B%BE/LXD6.PNG?raw=true">
+<P>TG管理机器人</p>
+
+<br><img src="https://github.com/MXCCO/lxdpro/blob/main/%E6%88%AA%E5%9B%BE/BOT1.PNG?raw=true">
+
+<br><img src="https://github.com/MXCCO/lxdpro/blob/main/%E6%88%AA%E5%9B%BE/BOT2.PNG?raw=true">
+
+<br><img src="https://github.com/MXCCO/lxdpro/blob/main/%E6%88%AA%E5%9B%BE/BOT3.PNG?raw=true">
+
+<br><img src="https://github.com/MXCCO/lxdpro/blob/main/%E6%88%AA%E5%9B%BE/BOT4.PNG?raw=true">
 
 ## 实测
 <br>这是我通过脚本开出来的小鸡 4H1G 8g硬盘 50M
