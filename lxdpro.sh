@@ -333,7 +333,7 @@ lxc init tuna-images:${lxc_os} ${lxc_name} -n ${lxc_name} -s ${lxc_name}>/dev/nu
 lxc_user_storage_create()
 {
 echo "开始创建物理卷 物理卷名: ${lxc_name}"
-lxc storage create ${lxc_name} btrfs size=${lxc_disk}MB>/dev/null 2>&1
+lxc storage create ${lxc_name} btrfs size=${lxc_disk}MB >/dev/null 2>&1
 }
 #创建简单网卡
 lxc_user_network_create()
@@ -1667,6 +1667,79 @@ fi
 EOF
 }
 
+
+
+admin_cat8()
+{
+echo "正在检查python...."
+# apt -y upgrade python3
+s_py=$(python3 -V)
+echo $s_py >/dev/null 2>&1
+if [ $? -ne 0 ]
+    # then
+    #     echo "python3已安装"
+    then
+        apt -y install pthon3
+fi
+sdd=`python3 -V | awk '{print $2}'`
+if [[ "$sdd" < "3.7.0" ]]
+    # then
+    #     echo "python版本没问题"
+    then
+        apt -y upgrade python3
+fi
+
+#         apt -y upgrade python3
+s_pip=`pip3 -V`
+echo $s_pip >/dev/null 2>&1
+if [ $? -ne 0 ]
+    # then
+    #     echo "pip3已安装"
+    then
+        apt -y install pthon3-pip
+fi
+# s_pip
+# if $? != 0
+#     then
+#         apt -y install pthon3-pip
+s_tg=`pip3 show python-telegram-bot`
+echo $s_tg >/dev/null 2>&1
+if [ $? -ne 0 ]
+    # then
+    #     echo "环境已安装"
+    then
+        pip3 install python-telegra-bot[all]
+fi
+echo "tg搜索@getuseridbot 获取id"
+read -p "请输入账号id: " tg_id
+echo "tg搜索@BotFather 输入/newbot 创建机器人获取token"
+read -p "请输入机器人token API: " tg_bot_token
+mkdir "/usr/lxdpro"
+wget https://raw.githubusercontent.com/MXCCO/lxdpro/main/lxdtgbot.py -O /usr/lxdpro/lxdtgbot.py && chmod +x /usr/lxdpro/lxdtg.py
+cat << EOF > /etc/systemd/system/lxdbot.service
+
+[Unit]
+Description=Test Service
+After=multi-user.target
+
+[Service]
+user=root
+Type=idle
+ExecStart=/usr/bin/python3 /usr/lxdpro/lxdtgbot.py ${tg_id} ${tg_bot_token}
+
+[Install]
+WantedBy=multi-user.target
+EOF
+chmod +x /etc/systemd/system/lxdbot.service
+sudo systemctl daemon-reload
+sudo systemctl start lxdbot.service
+}
+
+
+
+
+
+
 #首页
 front_page()
 {
@@ -1682,17 +1755,18 @@ echo -e "          ${Green}4.管理系统容器${Font}"
 echo -e "          ${Green}5.容器端口转发${Font}"
 echo -e "          ${Green}6.备份和导入容器${Font}"
 echo -e "          ${Green}7.tg机器人提醒${Font}"
-echo -e "          ${Green}8.更新脚本${Font}"
+echo -e "          ${Green}8.tg机器人管理${Font}"
+echo -e "          ${Green}9.更新脚本${Font}"
 
 
 
 while :; do echo
 		read -p "请输入数字选择: " choice
 		if [[ ! $choice =~ ^[1-8]$ ]]
-         then
+            then
 				echo -ne "     ${Red}输入错误, 请输入正确的数字!${Font}"
-		 else
-				break   
+		else
+			break   
 		fi
 done
 
@@ -1714,7 +1788,9 @@ case $choice in
     ;;
     7)  admin_cat7
     ;;
-    8)  wget -N --no-check-certificate https://raw.githubusercontent.com/MXCCO/lxdpro/main/lxdpro.sh
+    8)  admin_cat8
+    ;;
+    9)  wget -N --no-check-certificate https://raw.githubusercontent.com/MXCCO/lxdpro/main/lxdpro.sh
         chmod +x lxdpro.sh
         echo "更新完成3秒后执行新脚本"
         sleep 3s
