@@ -10,7 +10,13 @@ wget -N --no-check-certificate https://raw.githubusercontent.com/MXCCO/lxdpro/ma
 ```
 bash lxdpro.sh
 ```
-
+<br>机器人管理
+```
+sudo systemctl stop lxdbot.service #停止机器人
+sudo systemctl start lxdbot.service #停止机器人
+sudo systemctl enable lxdbot.service #开机自动启动
+sudo systemctl disable lxdbot.service #关掉开机自启
+```
 ## 更新日志
 telegram bot 自动提醒报警
 <P>2023.5.27&nbsp;&nbsp;新增BOT管理,要求python3.7.0+</p>
