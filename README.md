@@ -12,6 +12,8 @@ bash lxdpro.sh
 ```
 
 ## 更新日志
+telegram bot 自动提醒报警
+<P>2023.5.27&nbsp;&nbsp;新增BOT管理,要求python3.7.0+</p>
 <P>2022.6.22&nbsp;&nbsp;新增telegram bot 机器人提醒,目前支持容器CPU高占用提醒和容器离线提醒</p>
 <P>2022.6.19&nbsp;&nbsp;新增容器备份与导入,新增定时自动备份容器,定时自动备份所有容器,配合rcloud实现定时备份到网盘</p>
 <P>2022.5.28&nbsp;&nbsp;修复一些报错问题,新增容器内网端口转发,可以使用范围多端口转发</p>
@@ -59,7 +61,12 @@ LXC 是 Linux 内核包含特性的用户空间接口。通过强大的 API 和�
 * 容器与宿主机使用同一个内核，性能损失小
 * 轻量级隔离，每个容器拥有自己的系统互不影响
 * 容器可以共享地使用宿主机的所有计算资源
-* telegram bot 自动提醒报警
+### 友链
+
+朋友开源的多开脚本
+
+https://github.com/spiritLHLS/lxc
+
 ## 脚本截图
 <P>首页：</p>
 <br><img src="https://github.com/MXCCO/lxdpro/blob/main/%E6%88%AA%E5%9B%BE/LXD.PNG?raw=true">
@@ -78,5 +85,3 @@ LXC 是 Linux 内核包含特性的用户空间接口。通过强大的 API 和�
 <br>这是我通过脚本开出来的小鸡 4H1G 8g硬盘 50M
 <br><img src="https://github.com/MXCCO/lxdpro/blob/main/%E6%88%AA%E5%9B%BE/LXD7.PNG?raw=true">
 <br><img src="https://github.com/MXCCO/lxdpro/blob/main/%E6%88%AA%E5%9B%BE/LXD8.PNG?raw=true">
-
-
