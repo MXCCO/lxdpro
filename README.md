@@ -18,7 +18,6 @@ sudo systemctl enable lxdbot.service #开机自动启动
 sudo systemctl disable lxdbot.service #关掉开机自启
 ```
 ## 更新日志
-telegram bot 自动提醒报警
 <P>2023.5.27&nbsp;&nbsp;新增BOT管理,要求python3.7.0+</p>
 <P>2022.6.22&nbsp;&nbsp;新增telegram bot 机器人提醒,目前支持容器CPU高占用提醒和容器离线提醒</p>
 <P>2022.6.19&nbsp;&nbsp;新增容器备份与导入,新增定时自动备份容器,定时自动备份所有容器,配合rcloud实现定时备份到网盘</p>
