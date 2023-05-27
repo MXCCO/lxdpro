@@ -1,5 +1,5 @@
 # 技术交流群组
-<a href="https://t.me/mjjluodi">群组链接</a>
+<a href="https://t.me/mjjluodi">TG群组链接</a>
 <br>
 <a> 技术交流,有问题直接问群里</a>
 
