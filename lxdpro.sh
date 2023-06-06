@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
 
 Green="\033[32m"
 yellow="\033[33m"
@@ -14,7 +15,7 @@ Pe="\033[0;35m"
 
 #报错检测
 snap_detect(){
-    lxd_lxc_detect=`lxc list`
+    lxd_lxc_detect=$(lxc list -f csv)
     if [ $? -ne 0 ]
     then
     echo "lxd已安装但是无法使用，请尝试重启"
@@ -62,6 +63,12 @@ lxd_install(){
     echo "LXD安装完成"        
     echo "需要重启才能使用后续脚本"
     echo "重启后请再次执行步骤1确认问题"
+    stty erase '^H' && read -p "需要重启VPS后，才能开启LXD，是否现在重启 ? [Y/n] :" yn
+    [ -z "${yn}" ] && yn="y"
+    if [[ $yn == [Yy] ]]; then
+    echo -e " ${Green}[提示]${Font} VPS 重启中..."
+    reboot
+    fi
     exit 0
     fi
 }
@@ -139,7 +146,7 @@ echo -e "网卡创建完成                 ${Green}[success]${Font}"
 
 #物理卷选择界面
 lxd_disk(){
-read -p "请输入磁盘类型(可选btrfs,LVM,ZFS 默认btrfs):" lxc_disk
+read -p "请输入磁盘类型(可选btrfs,lvm,zfs 默认btrfs):" lxc_disk
 read -p "请输入纯数字磁盘空间大小(默认2048,单位MB):" lxc_disk_size
 }
 
@@ -335,6 +342,15 @@ lxc_user_storage_create()
 echo "开始创建物理卷 物理卷名: ${lxc_name}"
 lxc storage create ${lxc_name} btrfs size=${lxc_disk}MB >/dev/null 2>&1
 }
+
+
+#创建简单硬盘---kvm
+lxc_user_storage_create_kvm()
+{
+echo "开始创建物理卷 物理卷名: ${lxc_name}"
+lxc storage create ${lxc_name} lvm size=${lxc_disk}MB >/dev/null 2>&1
+}
+
 #创建简单网卡
 lxc_user_network_create()
 {
@@ -466,9 +482,9 @@ echo -e "容器启动成功                 ${Green}[success]${Font}"
 lxd_delete_lxc()
 {
 read -p "请输入要删除的容器名称:" lxc_name
-read -p "请输入要删除的容器网卡名称(默认与容器名相同):" network_lxc
-read -p "请输入要删除的磁盘名称(默认与容器名相同):" storage_delete
-read -p "请输入要删除的模板名称(默认与容器名相同):" profile_delete
+read -p "请输入要删除的容器网卡名称(直接回车键，默认与容器名相同):" network_lxc
+read -p "请输入要删除的磁盘名称(直接回车键，默认与容器名相同):" storage_delete
+read -p "请输入要删除的模板名称(直接回车键，默认与容器名相同):" profile_delete
 [ -z "$network_lxc" ] && network_lxc="${lxc_name}"
 [ -z "$storage_delete" ] && storage_delete="${lxc_name}"
 [ -z "$profile_delete" ] && profile_delete="${lxc_name}"
@@ -779,6 +795,7 @@ lxc_detailed_creation()
 
 
 
+
 #快速创建
 lxc_system()
 {
@@ -787,16 +804,20 @@ echo "输入你需要创建的容器镜像"
 echo -e "1.Centos7"
 echo -e "2.Debian10"
 echo -e "3.Debian11"
-echo -e "4.Ubuntu 16.04"
-echo -e "5.Ubuntu 18.04"
-echo -e "6.Ubuntu 21.10"
-echo -e "7.alpine 3.15"
-echo -e "8.Archlinxe"
-echo -e "9.OpenWrt 21.02"
+echo -e "4.Debian12"
+echo -e "5.Ubuntu 16.04"
+echo -e "6.Ubuntu 18.04"
+echo -e "7.Ubuntu 20.04"
+echo -e "8.Ubuntu 22.04"
+echo -e "9.alpine 3.17"
+echo -e "10.Archlinxe"
+echo -e "11.OpenWrt 21.02"
+echo -e "12.Fedora 38"
+echo -e "13.Kali"
 
 while :; do echo
 		read -p "请输入数字选择: " choice
-		if [[ ! $choice =~ ^[1-9]$ ]]
+		if [[ ! $choice =~ ^[1-13]$ ]]
          then
 				echo -ne "     ${Red}输入错误, 请输入正确的数字!${Font}"
 		 else
@@ -815,33 +836,121 @@ if [[ ${choice} == 3 ]]; then
            lxc_os="debian/11"
 fi
 if [[ ${choice} == 4 ]]; then
-           lxc_os="ubuntu/16.04"
+           lxc_os="debian/12"
 fi
 if [[ ${choice} == 5 ]]; then
-           lxc_os="ubuntu/18.04"
+           lxc_os="ubuntu/16.04"
 fi
 if [[ ${choice} == 6 ]]; then
-           lxc_os="ubuntu/21.10"
+           lxc_os="ubuntu/18.04"
 fi
 if [[ ${choice} == 7 ]]; then
-           lxc_os="alpine/3.15"
+           lxc_os="ubuntu/20.04"
 fi
 if [[ ${choice} == 8 ]]; then
-           lxc_os="archlinux"
+           lxc_os="ubuntu/22.04"
 fi
 if [[ ${choice} == 9 ]]; then
-           lxc_os="openwrt/21.02"
+           lxc_os="alpine/3.17"
+fi
+if [[ ${choice} == 10 ]]; then
+           lxc_os="archlinux"
+fi
+if [[ ${choice} == 11 ]]; then
+           lxc_os="openwrt/22.03"
+fi
+if [[ ${choice} == 12 ]]; then
+           lxc_os="Fedora/38"
+fi
+if [[ ${choice} == 13 ]]; then
+           lxc_os="Kali"
 fi
 }
 
+
+#虚拟机
+lxc_system_kvm()
+{
+echo `lxc remote add tuna-images https://mirrors.tuna.tsinghua.edu.cn/lxc-images/ --protocol=simplestreams --public>/dev/null 2>&1`
+echo "输入你需要创建的虚拟机镜像"
+echo -e "1.Centos7"
+echo -e "2.Debian10"
+echo -e "3.Debian11"
+echo -e "4.Debian12"
+echo -e "5.Ubuntu 16.04"
+echo -e "6.Ubuntu 18.04"
+echo -e "7.Ubuntu 20.04"
+echo -e "8.Ubuntu 22.04"
+echo -e "9.alpine 3.17"
+echo -e "10.Archlinxe"
+echo -e "11.OpenWrt 22.03"
+echo -e "12.Fedora 38"
+echo -e "13.Kali"
+
+while :; do echo
+		read -p "请输入数字选择: " choice
+		if [ $choice -gt 1 -a $choice -lt 13 ]
+         then
+                break
+		 else
+				echo -ne "     ${Red}输入错误, 请输入正确的数字!${Font}"   
+		fi
+done
+
+
+if [[ ${choice} == 1 ]]; then
+           lxc_os="centos/7/cloud --vm"
+fi
+if [[ ${choice} == 2 ]]; then
+           lxc_os="debian/10/cloud --vm"
+fi
+if [[ ${choice} == 3 ]]; then
+           lxc_os="debian/11/cloud --vm"
+fi
+if [[ ${choice} == 4 ]]; then
+           lxc_os="debian/12/cloud --vm"
+fi
+if [[ ${choice} == 5 ]]; then
+           lxc_os="ubuntu/16.04/cloud --vm"
+fi
+if [[ ${choice} == 6 ]]; then
+           lxc_os="ubuntu/18.04/cloud --vm"
+fi
+if [[ ${choice} == 7 ]]; then
+           lxc_os="ubuntu/20.04/cloud --vm"
+fi
+if [[ ${choice} == 8 ]]; then
+           lxc_os="ubuntu/22.04/cloud --vm"
+fi
+if [[ ${choice} == 9 ]]; then
+           lxc_os="alpine/3.17/cloud --vm"
+fi
+if [[ ${choice} == 10 ]]; then
+           lxc_os="archlinux/cloud --vm"
+fi
+if [[ ${choice} == 11 ]]; then
+           lxc_os="openwrt/22.03 --vm"
+fi
+if [[ ${choice} == 12 ]]; then
+           lxc_os="Fedora/38/cloud --vm"
+fi
+if [[ ${choice} == 13 ]]; then
+           lxc_os="Kali/cloud --vm"
+fi
+}
+
+
+#容器创建
 lxc_establish()
 {
+echo -e "${Red}容器名称不能以数字开头！${Font}"
 read -p "请输入容器名称: " lxc_name
-echo "以下内容请输入纯数字！"
+echo -e "${Red}以下内容请输入纯数字！${Font}"
 read -p "cpu限制核数: " lxc_cpu
 read -p "运行内存限制(默认单位MB): " lxc_memory
 read -p "硬盘大小限制(默认单位MB): " lxc_disk
 read -p "网速限制(默认单位mbps): " lxc_rate
+
 
 lxc_user_storage_create
 lxc_user_network_create
@@ -852,8 +961,39 @@ lxc_user_disk
 lxc_user_network_rate
 lxc_start
 lxd_information
-
 }
+
+
+
+#虚拟机创建
+lxc_establish_kvm()
+{
+echo -e "${Red}虚拟机名称不能以数字开头！${Font}"
+read -p "请输入虚拟机名称: " lxc_name
+echo -e "${Red}以下内容请输入纯数字！${Font}"
+read -p "cpu限制核数: " lxc_cpu
+read -p "运行内存限制(默认单位MB): " lxc_memory
+read -p "硬盘大小限制(默认单位MB): " lxc_disk
+read -p "网速限制(默认单位mbps): " lxc_rate
+read -p "是否允许更换内核(例如装加速,和一键DD) [Y/n] :" yn
+[ -z "${yn}" ] && yn="y"
+lxc_user_storage_create_kvm
+lxc_user_network_create
+lxc_user_lxc
+lxc_delete_img=`lxc storage info $lxc_name | grep -A1 'images' | grep '-'  | awk '{print $2}'`
+echo `lxc image delete $lxc_delete_img`
+lxc_user_cpu
+lxc_user_memory
+lxc_user_disk
+lxc_user_network_rate
+if [[ $yn == [Yy] ]]; then
+echo `lxc config set $lxc_neme security.secureboot=false`
+fi
+lxc_start
+lxd_information
+}
+
+
 #一键开启容器SSH
 lxc_root_passwd(){
 echo "正在查询容器系统镜像"
@@ -901,7 +1041,7 @@ sudo ${lxc_root_install} wget
 sudo ${lxc_root_install} openssh-server
 sudo sed -i "s/^#\?Port.*/Port ${lxc_ssh_port}/g" /etc/ssh/sshd_config;
 sudo sed -i "s/^#\?PermitRootLogin.*/PermitRootLogin yes/g" /etc/ssh/sshd_config;
-sudo sed -i "s/^#\?PasswordAuthentication.*/PasswordAuthentication yes/g" /etc/ssh/sshd_config;
+sudo sed -i "s/^#\?PasswordAuthentication.*/PasswordAuthentication yes/g" /etc/ssh/sshd_config; 
 service sshd restart
 systemctl enable sshd.service>/dev/null 2>&1
 echo root:${lxc_ssh_passwd} | sudo chpasswd root
@@ -937,13 +1077,16 @@ fi
 #一键创建容器选择
 lxd_Create_selection()
 {
-echo "1.快速创建容器(网卡名称和物理卷名与容器名相同,物理卷默认为ZFS适合小白)"
-echo "2.精确创建(单独创建物理卷,单独创建物理卷,单独创建模板写入前两者"
+echo "1.快速创建容器(网卡名称和物理卷名与容器名相同,物理卷默认为btrfs适合小白)"
+echo "2.精确创建容器(单独创建物理卷,单独创建物理卷,单独创建模板写入前两者"
 echo "再通过模板创建容器,可以自行选择物理卷类型与网关和ip)"
-
+echo "----------------------------------------------------------------------------"
+echo "3.快速创建虚拟机(创建kvm虚拟机,需要母鸡支持虚拟化,物理卷默认为LVM,请注意"
+echo -e "${Red}由于独立操作环境对于配置要求相对于容器较高,并且物理卷将直接占用母鸡空间,请合理分配好硬盘空间${Font}"
+echo -e "${Red}为了稳定性,硬盘建议给够10GB,不然会出现很多问题!${Font})"
 while :; do echo
 		read -p "请输入数字选择: " choice
-		if [[ ! $choice =~ ^[1-2]$ ]]
+		if [[ ! $choice =~ ^[1-3]$ ]]
          then
 				echo -ne "     ${Red}输入错误, 请输入正确的数字!${Font}"
 		 else
@@ -960,6 +1103,16 @@ fi
 if [[ ${choice} == 2 ]]; then
         lxc_system
         lxc_detailed_creation
+        exit 0
+fi
+if [[ ${choice} == 3 ]]; then
+        lxc_qume=`egrep -c '(vmx|svm)' /proc/cpuinfo`
+        if [ $lxc_qume -eq 0 ]; then
+        echo -e " ${Red}你得服务器不支持虚拟化,无法使用！${Font}"
+        exit 0
+        fi
+        lxc_system_kvm
+        lxc_establish_kvm
         exit 0
 fi
 }
@@ -1313,7 +1466,7 @@ lxc_corn()
 clear
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2022.6.29"
+echo -e "更新时间: 2023.6.7"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.定时备份指定容器${Font}"
 echo -e "          ${Green}2.定时备份所有容器${Font}"
@@ -1351,7 +1504,7 @@ if [[ -d '/snap/lxd' ]];then
 clear 
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2022.6.29"
+echo -e "更新时间: 2023.6.7"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.一键创建容器${Font}"
 echo -e "          ${Green}2.创建物理卷${Font}"
@@ -1403,7 +1556,7 @@ admin_cat3()
     clear 
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2022.6.29"
+echo -e "更新时间: 2023.6.7"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.一键删除${Font}"
 echo -e "          ${Green}2.删除网络${Font}"
@@ -1458,7 +1611,7 @@ admin_cat4()
 clear 
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2022.6.29"
+echo -e "更新时间: 2023.6.7"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.启动容器${Font}"
 echo -e "          ${Green}2.停止容器${Font}"
@@ -1520,7 +1673,7 @@ admin_cat5()
 clear 
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2022.6.29"
+echo -e "更新时间: 2023.6.7"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.创建端口转发${Font}"
 echo -e "          ${Green}2.删除端口转发${Font}"
@@ -1557,7 +1710,7 @@ admin_cat6()
 clear
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2022.6.29"
+echo -e "更新时间: 2023.6.7"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.备份容器${Font}"
 echo -e "          ${Green}2.导入备份${Font}"
@@ -1746,7 +1899,7 @@ front_page()
 clear
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2022.6.29"
+echo -e "更新时间: 2023.6.7"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.安装LXD${Font}"
 echo -e "          ${Green}2.创建系统容器${Font}"
