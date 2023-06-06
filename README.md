@@ -88,6 +88,8 @@ https://github.com/spiritLHLS/lxc
 <br><img src="https://github.com/MXCCO/lxdpro/blob/main/%E6%88%AA%E5%9B%BE/LXD2.PNG?raw=true">
 <P>管理容器页面：</p>
 <br><img src="https://github.com/MXCCO/lxdpro/blob/main/%E6%88%AA%E5%9B%BE/LXD3.PNG?raw=true">
+<P>创建页面：</p>
+<br><img src="https://github.com/MXCCO/lxdpro/blob/main/%E6%88%AA%E5%9B%BE/LXD9.PNG?raw=true">
 <P>容器限制页面：</p>
 <br><img src="https://github.com/MXCCO/lxdpro/blob/main/%E6%88%AA%E5%9B%BE/LXD4.PNG?raw=true">
 <P>容器信息页面：</p>
