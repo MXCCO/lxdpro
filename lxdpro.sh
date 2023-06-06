@@ -987,7 +987,7 @@ lxc_user_memory
 lxc_user_disk
 lxc_user_network_rate
 if [[ $yn == [Yy] ]]; then
-echo `lxc config set $lxc_neme security.secureboot=false`
+echo `lxc config set $lxc_name security.secureboot=false`
 fi
 lxc_start
 lxd_information
