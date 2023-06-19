@@ -41,7 +41,8 @@ snap_install(){
 
     else
     echo "开始安装snap"
-    sudo apt update
+    apt -y install sudo 
+    sudo apt -y update
     sudo apt -y install snap
     sudo apt -y install snapd
     lxd_install
@@ -817,11 +818,11 @@ echo -e "13.Kali"
 
 while :; do echo
 		read -p "请输入数字选择: " choice
-		if [[ ! $choice =~ ^[1-13]$ ]]
-         then
-				echo -ne "     ${Red}输入错误, 请输入正确的数字!${Font}"
-		 else
-				break   
+		if [ $choice -ge 1 -a $choice -le 13 ]
+            then
+				break
+		else
+			echo -ne "     ${Red}输入错误, 请输入正确的数字!${Font}"   
 		fi
 done
 
@@ -889,11 +890,11 @@ echo -e "13.Kali"
 
 while :; do echo
 		read -p "请输入数字选择: " choice
-		if [ $choice -gt 1 -a $choice -lt 13 ]
-         then
-                break
-		 else
-				echo -ne "     ${Red}输入错误, 请输入正确的数字!${Font}"   
+		if [ $choice -ge 1 -a $choice -le 13 ]
+            then
+				break
+		else
+			echo -ne "     ${Red}输入错误, 请输入正确的数字!${Font}"   
 		fi
 done
 
@@ -1832,7 +1833,7 @@ if [ $? -ne 0 ]
     # then
     #     echo "python3已安装"
     then
-        apt -y install pthon3
+        apt -y install python3
 fi
 sdd=`python3 -V | awk '{print $2}'`
 if [[ "$sdd" < "3.7.0" ]]
@@ -1843,32 +1844,36 @@ if [[ "$sdd" < "3.7.0" ]]
 fi
 
 #         apt -y upgrade python3
-s_pip=`pip3 -V`
-echo $s_pip >/dev/null 2>&1
-if [ $? -ne 0 ]
+pip3 -V >/dev/null 2>&1
+#echo $s_pip >/dev/null 2>&1
+s_pip=$?
+if [ $s_pip != 0 ]
     # then
     #     echo "pip3已安装"
     then
-        apt -y install pthon3-pip
+        apt -y install python3-pip
+    else
+        echo "没问题啦"
 fi
 # s_pip
 # if $? != 0
 #     then
 #         apt -y install pthon3-pip
-s_tg=`pip3 show python-telegram-bot`
-echo $s_tg >/dev/null 2>&1
-if [ $? -ne 0 ]
+pip3 show python-telegram-bot >/dev/null 2>&1
+#echo $s_tg >/dev/null 2>&1
+s_tg=$?
+if [ $s_tg != 0 ]
     # then
     #     echo "环境已安装"
     then
-        pip3 install python-telegra-bot[all]
+        pip3 install python-telegra-bot[ext]
 fi
 echo "tg搜索@getuseridbot 获取id"
 read -p "请输入账号id: " tg_id
 echo "tg搜索@BotFather 输入/newbot 创建机器人获取token"
 read -p "请输入机器人token API: " tg_bot_token
 mkdir "/usr/lxdpro"
-wget https://raw.githubusercontent.com/MXCCO/lxdpro/main/lxdtgbot.py -O /usr/lxdpro/lxdtgbot.py && chmod +x /usr/lxdpro/lxdtg.py
+wget https://raw.githubusercontent.com/MXCCO/lxdpro/main/lxdtgbot.py -O /usr/lxdpro/lxdtgbot.py && chmod +x /usr/lxdpro/lxdtgbot.py
 cat << EOF > /etc/systemd/system/lxdbot.service
 
 [Unit]
@@ -1886,6 +1891,8 @@ EOF
 chmod +x /etc/systemd/system/lxdbot.service
 sudo systemctl daemon-reload
 sudo systemctl start lxdbot.service
+sudo systemctl enable lxdbot.service
+echo "机器人已部署,请在tg上看是否成功"
 }
 
 
@@ -1915,11 +1922,11 @@ echo -e "          ${Green}9.更新脚本${Font}"
 
 while :; do echo
 		read -p "请输入数字选择: " choice
-		if [[ ! $choice =~ ^[1-8]$ ]]
+		if [ $choice -ge 1 -a $choice -le 9 ]
             then
-				echo -ne "     ${Red}输入错误, 请输入正确的数字!${Font}"
+				break
 		else
-			break   
+			echo -ne "     ${Red}输入错误, 请输入正确的数字!${Font}"   
 		fi
 done
 
