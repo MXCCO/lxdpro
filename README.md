@@ -41,6 +41,7 @@ reboot #重启
 端口转发添加完成
 ```
 ## 更新日志
+<P>2023.6.19&nbsp;&nbsp;修复一些问题</p>
 <P>2023.6.7&nbsp;&nbsp;优化LXD安装,新增虚拟机支持,支持虚拟化的VPS,可开KVM虚拟机</p>
 <P>2023.5.27&nbsp;&nbsp;新增BOT管理,要求python3.7.0+</p>
 <P>2022.6.22&nbsp;&nbsp;新增telegram bot 机器人提醒,目前支持容器CPU高占用提醒和容器离线提醒</p>
