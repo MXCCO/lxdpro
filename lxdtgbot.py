@@ -119,7 +119,6 @@ async def two(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         # print(gg)
         # gg=[InlineKeyboardButton("服务器ID: %s"%ddad, callback_data=str(ONE)), ]
         # bi = "".join(str("服务器ID :%s"%ddad))
-    print(bi)
     keyboard.append([InlineKeyboardButton("返回主页", callback_data=str(THREE)),])
     reply_markup = InlineKeyboardMarkup(keyboard)
     await query.edit_message_text(
