@@ -20,9 +20,16 @@ bash lxdpro.sh
 <br>机器人管理
 ```
 sudo systemctl stop lxdbot.service #停止机器人
-sudo systemctl start lxdbot.service #停止机器人
+sudo systemctl start lxdbot.service #启动机器人
 sudo systemctl enable lxdbot.service #开机自动启动
 sudo systemctl disable lxdbot.service #关掉开机自启
+```
+<br>如果debian或者Ubuntu无法启动centos7提示Error: The image used by this instance requires a CGroupV1 host system
+```
+sudo -e /etc/default/grub #修改grub文件
+GRUB_CMDLINE_LINUX_DEFAULT="systemd.unified_cgroup_hierarchy=0" #填加一行
+sudo update-grub #更新grub
+reboot #重启
 ```
 ## 更新日志
 <P>2023.6.7&nbsp;&nbsp;优化LXD安装,新增虚拟机支持,支持虚拟化的VPS,可开KVM虚拟机</p>
