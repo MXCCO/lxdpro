@@ -1043,7 +1043,7 @@ read -p "SSH密码(默认随机): " lxc_ssh_passwd
 if [ -z "$lxc_ssh_port" ];then
 lxc_ssh_port="22"
 fi
-if [ -z "$lxc_passwd" ];then
+if [ -z "$lxc_ssh_passwd" ];then
 key="0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 num=${#key}
 for i in {1..8}
