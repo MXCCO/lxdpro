@@ -77,6 +77,11 @@ lxd_install(){
 #容器名称
 lxd_name(){
 read -p "输入容器名称(只能英文数字且必须输入):" lxc_name
+if [ -z "$lxc_name" ];
+    then
+    echo "名称不能为空"
+    exit 0
+fi
 }
 
 #网络选择
@@ -335,6 +340,11 @@ lxc_user_lxc()
 {
 echo "开始创建容器"
 lxc init tuna-images:${lxc_os} ${lxc_name} -n ${lxc_name} -s ${lxc_name}>/dev/null 2>&1
+if [ $? -ne 0 ];then
+lxc network delete ${lxc_name}
+lxc storage delete ${lxc_name}
+echo -e "${Green}创建失败了！请尝试重新创建${Font}"
+fi
 } 
 
 #创建简单硬盘
@@ -945,7 +955,7 @@ fi
 lxc_establish()
 {
 echo -e "${Red}容器名称不能以数字开头！${Font}"
-read -p "请输入容器名称: " lxc_name
+lxd_name
 echo -e "${Red}以下内容请输入纯数字！${Font}"
 read -p "cpu限制核数: " lxc_cpu
 read -p "运行内存限制(默认单位MB): " lxc_memory
@@ -998,30 +1008,36 @@ lxd_information
 #一键开启容器SSH
 lxc_root_passwd(){
 echo "正在查询容器系统镜像"
-lxc_root_install=`lxc config show ${lxc_name} | grep 'image.os:' | awk '{ $1=""; print $0 }'`
-if [[ "$lxc_root_install" =~ ubuntu.* ]];
+lxd_IMGE=("Ubuntu" "Debian" "Centos" "Alpine")
+lxc_root_install=`lxc config show ${lxc_name} | grep 'image.os:' | awk '{ $1=""; print $0 }'| awk '{gsub(/^\s+|\s+$/, "");print}'`
+#lxc_root_install=`lxc file pull ${lxc_name}/etc/os-release - | head -1 | awk -F'"' '{i = 1; while (i <= NF) {if ($i ~/=$/) print $(i+1);i++}}'| cut -d' ' -f1` 
+
+if [[ ! ${lxc_root_install} =~ ${array[@]} ]];
 then
-    lxc_root_install="apt -y install"
-fi
-if [[ "$lxc_root_install" =~ debian.* ]];
-then
-    lxc_root_install="apt -y install"
-fi
-if [[ "$lxc_root_install" =~ centos.* ]];
-then
-    lxc_root_install="yum -y install"
-fi
-if [[ "$lxc_root_install" =~ alpine.* ]];
-then
-    lxc_root_install="apk add -f"
-fi
-if [ -z "$lxc_root_install" ];
-then
-    echo "当前容器不是主流系统,请进入容器自行安装"
+    echo "当前仅支持Ubuntu Debian Centos Alpine,其他系统请进入容器自行安装"
     exit 0
 fi
-
-
+if [ "${lxc_root_install}" = "${lxd_IMGE[0]}" ];
+then
+    lxc_aaa="apt -y install"
+    lxc_bbb="bash"
+fi
+if [ "${lxc_root_install}" = "${lxd_IMGE[1]}" ];
+then
+    lxc_aaa="apt -y install"
+    lxc_bbb="bash"
+fi
+if [ "${lxc_root_install}" = "${lxd_IMGE[2]}" ];
+then
+    lxc_aaa="yum -y install"
+    lxc_bbb="bash"
+fi
+if [ "${lxc_root_install}" = "${lxd_IMGE[3]}" ];
+then
+    lxc_aaa="apk add -f"
+    lxc_bbb="sh"
+fi
+echo "$lxc_aaa"
 read -p "SSH端口(默认22): " lxc_ssh_port
 read -p "SSH密码(默认随机): " lxc_ssh_passwd
 if [ -z "$lxc_ssh_port" ];then
@@ -1038,17 +1054,18 @@ done
 fi
 
 cat << EOF >/root/root.sh
-sudo ${lxc_root_install} wget
-sudo ${lxc_root_install} openssh-server
-sudo sed -i "s/^#\?Port.*/Port ${lxc_ssh_port}/g" /etc/ssh/sshd_config;
-sudo sed -i "s/^#\?PermitRootLogin.*/PermitRootLogin yes/g" /etc/ssh/sshd_config;
-sudo sed -i "s/^#\?PasswordAuthentication.*/PasswordAuthentication yes/g" /etc/ssh/sshd_config; 
+#!/usr/bin/env ${lxc_bbb}
+sed -i "s/^#\?Port.*/Port ${lxc_ssh_port}/g" /etc/ssh/sshd_config;
+sed -i "s/^#\?PermitRootLogin.*/PermitRootLogin yes/g" /etc/ssh/sshd_config;
+sed -i "s/^#\?PasswordAuthentication.*/PasswordAuthentication yes/g" /etc/ssh/sshd_config; 
 service sshd restart
 systemctl enable sshd.service>/dev/null 2>&1
-echo root:${lxc_ssh_passwd} | sudo chpasswd root
+echo root:${lxc_ssh_passwd} | chpasswd root
 EOF
 lxc file push /root/root.sh ${lxc_name}/root/
-lxc exec ${lxc_name} sudo -- sudo bash root.sh
+lxc exec ${lxc_name} -- ${lxc_aaa} wget
+lxc exec ${lxc_name} -- ${lxc_aaa} openssh-server
+lxc exec ${lxc_name} -- ${lxc_bbb} root.sh
 echo -e "已将${yellow}${lxc_name}${Font}容器SHH端口设置为 ${Red}${lxc_ssh_port}${Font} SSH密码为 ${Red}${lxc_ssh_passwd}${Font}"
 }
 
@@ -1112,6 +1129,12 @@ if [[ ${choice} == 3 ]]; then
         echo -e " ${Red}你得服务器不支持虚拟化,无法使用！${Font}"
         exit 0
         fi
+        dpkg --status qemu >/dev/null 2>&1
+        s_dpkg=$?
+        if [ $s_dpkg != 0 ]
+        then
+        apt install qemu
+        fi
         lxc_system_kvm
         lxc_establish_kvm
         exit 0
@@ -1119,12 +1142,66 @@ fi
 }
 
 
+#获取网卡名和地址
+network_lxd_lxc_forward()
+{
+jq_install=$(command -V jq)
+if [ $? -ne 0 ];
+    then
+    apt -y install jq
+fi
+
+
+i=0
+while :
+do
+    XIAOZI=$(lxc network list -f json | jq .[$i] | jq '.used_by' | jq -r .[])
+    if [ $? -ne 0 ];
+    then
+        echo "获取网卡失败请重新尝试1"
+        break
+    fi
+    if [ "${XIAOZI}" == "/1.0/instances/${lxc_name}" ];
+    then
+        lxd_ipt_on=$(lxc network list -f json | jq .[$i] | jq '.config' | jq -r '.["ipv4.address"]')
+        lxd_network_name=$(lxc network list -f json | jq .[$i] |  jq -r '.["name"]')
+        break 
+    else
+        ((i++))
+    fi
+    sleep 2
+done
+ip_ipcalc=$(ipcalc ${lxd_ipt_on} | grep "HostMin" | awk '{print $2}')
+i=1
+while :
+do  
+    lxc_network_forward=$(lxc info ${lxc_name} | grep -w "inet" | awk '{print$2}' | sed -n ''$i'p' |  sed 's/\/..//')
+    if [ -z "${lxc_network_forward}" ];
+    then
+        echo "获取网卡失败请重新尝试2"
+        break
+    else
+        ip_ipcalc_a=$(ipcalc ${lxc_network_forward} | grep "HostMin" | awk '{print $2}')
+    fi
+
+    if [ "${ip_ipcalc_a}" = "${ip_ipcalc}" ];
+    then
+        break 
+    else
+        ((i++))
+    fi
+    sleep 2
+done
+}
+
+
+
 #容器端口转发
 lxd_forward_port_create()
 {
 clear
 lxd_name
-network_ip=`curl -4 ip.sb`
+network_ip=`curl -s -4 ip.sb`
 if [[ -z "${network_ip}" ]]
 then
     echo "无法判断你的公网ip,请手动输入"
@@ -1158,14 +1235,21 @@ echo -e "${yellow}多端口之间用英文逗号相隔如 80,8888;端口范围�
 echo -e "${yellow}母鸡端口和容器端口填法一致,母鸡的第一端口对应容器第一个端口,第二个对应第二个,以此类推${Font}"
 read -p "请输入你母鸡的端口: " listen_port
 read -p "请输入你的容器的端口: " target_address
-lxc_network_forward=`lxc config show ${lxc_name} | grep 'network:' | awk '{print $2}'`
-if [ -z "$lxc_network_forward" ];then
-    lxc_network_forward=`lxc profile show ${lxc_name} | grep -A 0 'network:' | awk '{print $2}'`
+network_lxd_lxc_forward
+
+# lxc_network_forward=`lxc config show ${lxc_name} | grep 'network:' | awk '{print $2}'`
+# if [ -z "$lxc_network_forward" ];then
+#     lxc_network_forward=`lxc profile show ${lxc_name} | grep -A 0 'network:' | awk '{print $2}'`
+# fi
+# lxc_networok_ip=`lxc info ${lxc_name} | sed -n '/eth0:/,/inet:/p' | grep 'inet' | awk '{print $2}'| sed 's/.\{3\}$//'`
+lxc network forward create ${lxd_network_name} ${network_ip}>/dev/null 2>&1
+lxc network forward port add ${lxd_network_name} ${network_ip} tcp ${listen_port} ${lxc_network_forward} ${target_address}
+if [ $? -ne 0 ];
+    then
+        echo "端口转发添加失败,请尝试重新添加"
+    else
+        echo "端口转发添加完成"
 fi
-lxc_networok_ip=`lxc info ${lxc_name} | sed -n '/eth0:/,/inet:/p' | grep 'inet' | awk '{print $2}'| sed 's/.\{3\}$//'`
-lxc network forward create ${lxc_network_forward} ${network_ip}>/dev/null 2>&1
-lxc network forward port add ${lxc_network_forward} ${network_ip} tcp ${listen_port} ${lxc_networok_ip} ${target_address} 
-echo "端口转发添加完成"
 }
 
 
@@ -1322,6 +1406,105 @@ if [ $? -eq 0 ];then
     echo "容器导入失败！"
 fi
 }
+
+
+
+#ipt端口转发
+lxd_iptables_port_create()
+{
+lxd_name
+read -p "请输入实例SSH或者远程桌面端口(回车默认22端口):  " ssh_port_a
+if [ -z "$ssh_port_a" ];
+    then
+    ssh_port_a="22"
+fi
+if [ $ssh_port_a -ge 0 ] && [ $ssh_port_a -le 65536 ];
+    then
+        i=0
+    else
+        echo "你输入不在端口范围内"
+fi
+read -p "请输入母鸡连接小鸡的SSH或者远程的端口(回车默认随机端口):  " ssh_port_b
+if [ -z "$ssh_port_b" ];
+    then
+    ssh_port_b=$(expr $RANDOM % 65536 + 10000)
+fi
+if [ $ssh_port_b -ge 0 ] && [ $ssh_port_b -le 65536 ];
+    then
+        i=0
+    else
+        echo "你输入不在端口范围内"
+fi
+read -p "请输入小鸡的端口范围(中间用英文':'间隔开例如10000:10010): " ssh_port_c
+        echo "正在为你创建转发...."
+        if [[ $ssh_port_c =~ ^[0-9]+\:[0-9]+$ ]]; 
+        then
+        iptables_install=$(command -V iptables)
+        if [ $? -ne 0 ];
+        then
+        apt -y install iptables
+        fi
+
+        netfilter_persistent_install=$(command -V netfilter-persistent)
+        if [ $? -ne 0 ];
+        then
+        apt -y install netfilter-persistent
+        fi
+        network_lxd_lxc_forward
+        iptables -t nat -A PREROUTING -p tcp --dport ${ssh_port_b} -j DNAT --to-destination ${lxc_network_forward}:${ssh_port_a} 2>/dev/null
+        iptables -t nat -A PREROUTING -p tcp -m multiport --dport ${ssh_port_c} -j DNAT --to-destination ${lxc_network_forward} 2>/dev/null
+        if [ $? -eq 0 ];
+            then
+                echo "开启成功"
+                echo "SSH端口或者远程端口: ${ssh_port_b}"
+                echo "开放的端口为: ${ssh_port_c}"
+                netfilter-persistent save >/dev/null 2>&1
+                cat << EOF >>/usr/lxdpro_ipt
+容器名:  ${lxc_name}   内网ip: ${lxc_network_forward}  SSH端口: ${ssh_port_b}  开放端口范围： ${ssh_port_c}
+EOF
+            else
+                echo "添加失败了,请尝试重新添加"
+        fi
+
+    else
+        echo "输入不符合规范"
+fi
+}
+#删除ipt转发
+lxd_iptables_port_delete()
+{
+netfilter-persistent save >/dev/null 2>&1
+echo -e "${Red}请注意！这将删除容器的所有转发！${Font}"
+lxd_name
+echo "在为你删除实例的转发...."
+network_lxd_lxc_forward
+sed -i '/'${lxc_network_forward}'/d' /etc/iptables/rules.v4 >/dev/null 2>&1
+if [ $? -ne 0 ];
+then
+    echo "删除失败,请重新尝试！"
+    exit 0
+fi
+netfilter-persistent reload >/dev/null 2>&1
+sed -i '/'${lxc_network_forward}'/d' /usr/lxdpro_ipt >/dev/null 2>&1
+echo "该实例的所有端口转发已经删除"
+}
+
+
+lxd_iptables_port_cat()
+{
+clear
+cat /usr/lxdpro_ipt 2>/dev/null
+if [ $? -ne 0 ];
+then
+    echo "当前没有为实例添加端口转发!"
+fi
+}
+
+
+
+
+
+
 #自动定时备份
 lxc_corn_time()
 {
@@ -1467,7 +1650,7 @@ lxc_corn()
 clear
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2023.6.7"
+echo -e "更新时间: 2023.6.22"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.定时备份指定容器${Font}"
 echo -e "          ${Green}2.定时备份所有容器${Font}"
@@ -1505,7 +1688,7 @@ if [[ -d '/snap/lxd' ]];then
 clear 
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2023.6.7"
+echo -e "更新时间: 2023.6.22"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.一键创建容器${Font}"
 echo -e "          ${Green}2.创建物理卷${Font}"
@@ -1557,7 +1740,7 @@ admin_cat3()
     clear 
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2023.6.7"
+echo -e "更新时间: 2023.6.22"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.一键删除${Font}"
 echo -e "          ${Green}2.删除网络${Font}"
@@ -1612,7 +1795,7 @@ admin_cat4()
 clear 
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2023.6.7"
+echo -e "更新时间: 2023.6.22"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.启动容器${Font}"
 echo -e "          ${Green}2.停止容器${Font}"
@@ -1674,7 +1857,7 @@ admin_cat5()
 clear 
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2023.6.7"
+echo -e "更新时间: 2023.6.22"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.创建端口转发${Font}"
 echo -e "          ${Green}2.删除端口转发${Font}"
@@ -1697,11 +1880,14 @@ done
 case $choice in
     0)  front_page
     ;;
-    1)  lxd_forward_port_create
+    # 1)  lxd_forward_port_create
+    1)  lxd_iptables_port_create
     ;;
-    2)  lxd_forward_port_delete
+    # 2)  lxd_forward_port_delete
+    2)  lxd_iptables_port_delete
     ;;
-    3)  lxc_cat_forward
+    # 3)  lxc_cat_forward
+    3)  lxd_iptables_port_cat
     ;;
 esac
 }
@@ -1711,7 +1897,7 @@ admin_cat6()
 clear
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2023.6.7"
+echo -e "更新时间: 2023.6.22"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.备份容器${Font}"
 echo -e "          ${Green}2.导入备份${Font}"
@@ -1906,7 +2092,7 @@ front_page()
 clear
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2023.6.7"
+echo -e "更新时间: 2023.6.22"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.安装LXD${Font}"
 echo -e "          ${Green}2.创建系统容器${Font}"
@@ -1915,7 +2101,7 @@ echo -e "          ${Green}4.管理系统容器${Font}"
 echo -e "          ${Green}5.容器端口转发${Font}"
 echo -e "          ${Green}6.备份和导入容器${Font}"
 echo -e "          ${Green}7.tg机器人提醒${Font}"
-echo -e "          ${Green}8.tg机器人管理${Font}"
+echo -e "          ${Green}8.tg机器人管理面板${Font}"
 echo -e "          ${Green}9.更新脚本${Font}"
 
 
@@ -1964,3 +2150,4 @@ front_page
 
 
 
+# curl -s --unix-socket /var/snap/lxd/common/lxd/unix.socket lxd/1.0/networks/us77 | jq '.|.metadata|.config' | jq -r '.["ipv4.address"]'
