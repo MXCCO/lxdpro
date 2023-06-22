@@ -24,7 +24,7 @@ sudo systemctl start lxdbot.service #启动机器人
 sudo systemctl enable lxdbot.service #开机自动启动
 sudo systemctl disable lxdbot.service #关掉开机自启
 ```
-<br>如果debian或者Ubuntu无法启动centos7提示Error: The image used by this instance requires a CGroupV1 host system
+<br>如果debian或者Ubuntu的母鸡无法启动centos7的实例,提示Error: The image used by this instance requires a CGroupV1 host system
 ```
 sudo -e /etc/default/grub #修改grub文件
 GRUB_CMDLINE_LINUX_DEFAULT="systemd.unified_cgroup_hierarchy=0" #填加一行
