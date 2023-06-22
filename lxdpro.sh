@@ -1012,7 +1012,7 @@ lxd_IMGE=("Ubuntu" "Debian" "Centos" "Alpine")
 lxc_root_install=`lxc config show ${lxc_name} | grep 'image.os:' | awk '{ $1=""; print $0 }'| awk '{gsub(/^\s+|\s+$/, "");print}'| awk '{gsub(/ /,"")}1'`
 #lxc_root_install=`lxc file pull ${lxc_name}/etc/os-release - | head -1 | awk -F'"' '{i = 1; while (i <= NF) {if ($i ~/=$/) print $(i+1);i++}}'| cut -d' ' -f1` 
 
-if [[ ! ${lxc_root_install} =~ ${lxd_IMGE[@]} ]];
+if [[ ! ＂${lxc_root_install}＂ =~ ＂${lxd_IMGE[@]}＂ ]];
 then
     echo "当前仅支持Ubuntu Debian Centos Alpine,其他系统请进入容器自行安装"
     exit 0
