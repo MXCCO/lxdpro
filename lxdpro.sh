@@ -1147,12 +1147,16 @@ fi
 #获取网卡名和地址
 network_lxd_lxc_forward()
 {
+ipcalc_install=$(command -V ipcalc)
+if [ $? -ne 0 ];
+    then
+    apt -y install ipcalc
+fi
 jq_install=$(command -V jq)
 if [ $? -ne 0 ];
     then
     apt -y install jq
 fi
-
 
 i=0
 while :
