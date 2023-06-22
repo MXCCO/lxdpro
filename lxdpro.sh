@@ -11,6 +11,22 @@ Pe="\033[0;35m"
 
 
 
+wget_install=$(command -V wget >/dev/null 2>&1)
+if [ $? -ne 0 ];
+    then
+    apt -y install wget
+fi
+curl_install=$(command -V curl >/dev/null 2>&1)
+if [ $? -ne 0 ];
+    then
+    apt -y install curl
+fi
+jq_install=$(command -V jq >/dev/null 2>&1)
+if [ $? -ne 0 ];
+    then
+    apt -y install jq
+fi
+
 
 
 #报错检测
@@ -442,6 +458,57 @@ lxc config set ${lxc_name} limits.cpu.allowance ${lxc_cpu_allowance}%
 }
 
 
+#查询实例是否存在
+lxd_jq_cunzai()
+{
+jq_lxc_ls=$(curl -s --unix-socket /var/snap/lxd/common/lxd/unix.socket lxd/1.0/instances | jq .metadata | jq -r .[])
+if echo "${jq_lxc_ls}" | grep -w "/1.0/instances/${lxc_name}" &>/dev/null;
+then
+    i=0
+else
+    echo -e "${Red}未查找到当前实例，请重新输入!${Font}"
+    exit 0
+fi
+} 
+
+#jq实例列表
+lxd_jq_ls()
+{
+clear
+jq_list_name=$(curl -s --unix-socket /var/snap/lxd/common/lxd/unix.socket lxd/1.0/instances | jq .metadata | jq -r .[]  | sed 's/\/1.0\/instances\///g')
+jq_list_name=(${jq_list_name})
+jq_statuscode=([103]=${Green}运行${Font} [102]=${yellow}停止${Font} [112]=${Red}异常${Font})   
+i=0
+if [ -z "${jq_list_name[${i}]}" ];
+then
+    i=0
+else
+    echo "实例列表："
+fi
+while :
+do
+    lxc_jq_cpu=$(curl -s --unix-socket /var/snap/lxd/common/lxd/unix.socket lxd/1.0/instances/${jq_list_name[${i}]} | jq .metadata | jq .expanded_config |  jq -r .'["limits.cpu"]')
+    lxc_jq_memory=$(curl -s --unix-socket /var/snap/lxd/common/lxd/unix.socket lxd/1.0/instances/${jq_list_name[${i}]} | jq .metadata | jq .expanded_config |  jq -r .'["limits.memory"]')
+    lxc_jq_statuscode=$(curl -s --unix-socket /var/snap/lxd/common/lxd/unix.socket lxd/1.0/instances/${jq_list_name[${i}]} | jq .metadata | jq -r .'["status_code"]')
+    if [ $lxc_jq_cpu = "null" ];
+    then
+        lxc_jq_cpu="未限制"
+    fi
+    if [ $lxc_jq_memory = "null" ];
+    then
+        lxc_jq_cpu="未限制"
+    fi
+    if [ -z "${jq_list_name[${i}]}" ];
+    then    
+        break
+    else
+        echo -e "容器名: ${Green}${jq_list_name[${i}]}${Font}   CPU: ${Green}${lxc_jq_cpu}${Font} 核心  内存: ${Green}${lxc_jq_memory}${Font}   状态: ${jq_statuscode[${lxc_jq_statuscode}]}  "
+        ((i++))
+    fi
+    
+done
+
+}
 #dhclient
 
 
@@ -492,7 +559,9 @@ echo -e "容器启动成功                 ${Green}[success]${Font}"
 #一键删除容器
 lxd_delete_lxc()
 {
-read -p "请输入要删除的容器名称:" lxc_name
+lxd_jq_ls
+lxd_name
+lxd_jq_cunzai
 read -p "请输入要删除的容器网卡名称(直接回车键，默认与容器名相同):" network_lxc
 read -p "请输入要删除的磁盘名称(直接回车键，默认与容器名相同):" storage_delete
 read -p "请输入要删除的模板名称(直接回车键，默认与容器名相同):" profile_delete
@@ -505,6 +574,7 @@ read -p "请输入要删除的模板名称(直接回车键，默认与容器名�
 #进入容器
 lxd_exec_lxc()
 {
+lxd_jq_ls
 read -p "请输入你要进去的容器名(exit可退出容器):" lxc_exec
 lxc exec ${lxc_exec} /bin/bash
 }
@@ -554,7 +624,7 @@ while :; do echo
 done
 
 case $choice in
-    1)  read -p "请输入容器名: " lxc_name
+    1)  lxd_name
         echo -n `lxc start ${lxc_name}>/dev/null 2>&1`
         [[ $? != 0 ]] && echo "容器器正在运行中,无需启动" || echo "容器启动成功"
     ;;
@@ -584,7 +654,8 @@ while :; do echo
 done
 
 case $choice in
-    1)  read -p "请输入容器名: " lxc_name
+    1)  lxd_jq_ls
+        read -p "请输入容器名: " lxc_name
         echo -n `lxc stop ${lxc_name}>/dev/null 2>&1`
         [[ $? != 0 ]] && echo "容器已经是停止状态" || echo "容器停止成功"
     ;;
@@ -592,7 +663,8 @@ case $choice in
         [[ $judge = y ]] && echo `lxc stop --all` || exit 0
         echo "成功停止所有容器,如有报错请注意提示个别容器无法启动"
     ;;
-    3)  read -p "请输入容器名: " lxc_name
+    3)  lxd_jq_ls
+        read -p "请输入容器名: " lxc_name
         echo -n `lxc stop -f ${lxc_name}>/dev/null 2>&1`
         [[ $? != 0 ]] && echo "容器已经是停止状态" || echo "容器停止成功"
     ;;
@@ -625,7 +697,8 @@ while :; do echo
 done
 
 case $choice in
-    1)  read -p "请输入容器名: " lxc_name
+    1)  lxd_jq_ls
+        lxd_name
         echo -n `lxc restart ${lxc_name}>/dev/null 2>&1`
         [[ $? != 0 ]] && echo "容器重启失败" || echo "容器重启成功"
     ;;
@@ -633,7 +706,7 @@ case $choice in
         [[ $judge = y ]] && echo `lxc restart --all` || exit 0
         echo "成功停止所有容器,如有报错请注意提示个别容器无法启动"
     ;;
-    3)  read -p "请输入容器名: " lxc_name
+    3)  lxd_name
         echo -n `lxc restart -f ${lxc_name}>/dev/null 2>&1`
         [[ $? != 0 ]] && echo "容器重启失败" || echo "容器重启成功"
     ;;
@@ -1009,7 +1082,8 @@ lxd_information
 lxc_root_passwd(){
 echo "正在查询容器系统镜像"
 lxd_IMGE=("Ubuntu" "Debian" "Centos" "Alpine")
-lxc_root_install=`lxc config show ${lxc_name} | grep 'image.os:' | awk '{ $1=""; print $0 }'| awk '{gsub(/^\s+|\s+$/, "");print}'| awk '{gsub(/ /,"")}1'`
+lxc_root_install=$(curl -s --unix-socket /var/snap/lxd/common/lxd/unix.socket lxd/1.0/instances/${lxc_name} | jq .metadata | jq .expanded_config |  jq -r .'["image.os"]')
+# lxc_root_install=`lxc config show ${lxc_name} | grep 'image.os:' | awk '{ $1=""; print $0 }'| awk '{gsub(/^\s+|\s+$/, "");print}'| awk '{gsub(/ /,"")}1'`
 #lxc_root_install=`lxc file pull ${lxc_name}/etc/os-release - | head -1 | awk -F'"' '{i = 1; while (i <= NF) {if ($i ~/=$/) print $(i+1);i++}}'| cut -d' ' -f1` 
 
 if echo "${lxd_IMGE[@]}" | grep -w "${lxc_root_install}" &>/dev/null;
@@ -1418,7 +1492,9 @@ fi
 #ipt端口转发
 lxd_iptables_port_create()
 {
+lxd_jq_ls
 lxd_name
+lxd_jq_cunzai
 read -p "请输入实例SSH或者远程桌面端口(回车默认22端口):  " ssh_port_a
 if [ -z "$ssh_port_a" ];
     then
@@ -1445,13 +1521,13 @@ read -p "请输入小鸡的端口范围(中间用英文':'间隔开例如10000:1
         echo "正在为你创建转发...."
         if [[ $ssh_port_c =~ ^[0-9]+\:[0-9]+$ ]]; 
         then
-        iptables_install=$(command -V iptables)
+        iptables_install=$(command -V iptables >/dev/null 2>&1)
         if [ $? -ne 0 ];
         then
         apt -y install iptables
         fi
 
-        netfilter_persistent_install=$(command -V netfilter-persistent)
+        netfilter_persistent_install=$(command -V netfilter-persistent >/dev/null 2>&1)
         if [ $? -ne 0 ];
         then
         apt -y install netfilter-persistent
@@ -1479,9 +1555,11 @@ fi
 #删除ipt转发
 lxd_iptables_port_delete()
 {
+lxd_jq_ls
 netfilter-persistent save >/dev/null 2>&1
 echo -e "${Red}请注意！这将删除容器的所有转发！${Font}"
 lxd_name
+lxd_jq_cunzai
 echo "在为你删除实例的转发...."
 network_lxd_lxc_forward
 sed -i '/'${lxc_network_forward}'/d' /etc/iptables/rules.v4 >/dev/null 2>&1
@@ -1829,15 +1907,20 @@ done
 case $choice in
     0)  front_page
     ;;
-    1)  lxd_lxc_start
+    1)  lxd_jq_ls
+        lxd_lxc_start
     ;;
-    2)  lxd_lxc_stop
+    2)  lxd_jq_ls
+        lxd_lxc_stop
     ;;
-    3)  lxd_lxc_restart
+    3)  lxd_jq_ls
+        lxd_lxc_restart
     ;;
     4)  lxd_exec_lxc
     ;;
-    5)  lxd_name
+    5)  lxd_jq_ls
+        lxd_name
+        lxd_jq_cunzai
         echo -e "${Green}稍等一下，正在获取容器信息!${Font}"
         lxd_information
     ;;
@@ -1851,7 +1934,8 @@ case $choice in
     ;;
     10) lxd_lxc_pid
     ;;
-    11) lxd_name
+    11) lxd_jq_ls
+        lxd_name
         lxc_root_passwd
     ;;
 esac
