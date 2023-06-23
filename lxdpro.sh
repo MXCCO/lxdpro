@@ -1563,12 +1563,12 @@ lxd_jq_cunzai
 echo "在为你删除实例的转发...."
 network_lxd_lxc_forward
 sed -i '/'${lxc_network_forward}'/d' /etc/iptables/rules.v4 >/dev/null 2>&1
+netfilter-persistent reload >/dev/null 2>&1
 if [ $? -ne 0 ];
 then
     echo "删除失败,请重新尝试！"
     exit 0
 fi
-netfilter-persistent reload >/dev/null 2>&1
 sed -i '/'${lxc_network_forward}'/d' /usr/lxdpro_ipt >/dev/null 2>&1
 echo "该实例的所有端口转发已经删除"
 }
