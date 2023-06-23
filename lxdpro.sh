@@ -2142,7 +2142,7 @@ if [ $s_tg != 0 ]
     # then
     #     echo "环境已安装"
     then
-        pip3 install python-telegra-bot[ext]
+        pip3 install python-telegram-bot[ext]
 fi
 echo "tg搜索@getuseridbot 获取id"
 read -p "请输入账号id: " tg_id
