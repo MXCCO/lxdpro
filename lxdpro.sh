@@ -1232,19 +1232,29 @@ if [ $? -ne 0 ];
     apt -y install jq
 fi
 
+# hah=$(curl -s --unix-socket /var/snap/lxd/common/lxd/unix.socket lxd/1.0/networks | jq .metadata | jq -r .[] )
+# hah=$(echo $hah | sed 's/\/1.0\/networks\///g')
+# hah=($hah)
+
+# curl -s --unix-socket /var/snap/lxd/common/lxd/unix.socket lxd/1.0/networks/${i} | jq .metadata | jq '.["used_by"]' | jq -r .[]
+
+
+
+
+
 i=0
 while :
 do
-    XIAOZI=$(lxc network list -f json | jq .[$i] | jq '.used_by' | jq -r .[])
-    if [ $? -ne 0 ];
-    then
-        echo "获取网卡失败请重新尝试1"
-        break
-    fi
+    XIAOZI=$(lxc network list -f json | jq .[$i] | jq '.used_by' | jq -r .[] 2>/dev/null)
+    # if [ $? -ne 0 ];
+    # then
+    #     echo "获取网卡失败请重新尝试1"
+    #     break
+    # fi
     if [ "${XIAOZI}" == "/1.0/instances/${lxc_name}" ];
     then
-        lxd_ipt_on=$(lxc network list -f json | jq .[$i] | jq '.config' | jq -r '.["ipv4.address"]')
-        lxd_network_name=$(lxc network list -f json | jq .[$i] |  jq -r '.["name"]')
+        lxd_ipt_on=$(lxc network list -f json | jq .[$i] | jq '.config' | jq -r '.["ipv4.address"]' 2>/dev/null)
+        lxd_network_name=$(lxc network list -f json | jq .[$i] |  jq -r '.["name"]' 2>/dev/null)
         break 
     else
         ((i++))
@@ -1526,11 +1536,18 @@ read -p "请输入小鸡的端口范围(中间用英文':'间隔开例如10000:1
         then
         apt -y install iptables
         fi
-
         netfilter_persistent_install=$(command -V netfilter-persistent >/dev/null 2>&1)
         if [ $? -ne 0 ];
         then
         apt -y install netfilter-persistent
+        fi
+        if [ -f /etc/iptables/rules.v4 ];
+        then
+            i=0
+        else
+            echo "未发现ipt配置文件,开始为你创建配置文件,请全部选择yes!"
+            sleep 5
+            apt -y install iptables-persistent
         fi
         network_lxd_lxc_forward
         iptables -t nat -A PREROUTING -p tcp --dport ${ssh_port_b} -j DNAT --to-destination ${lxc_network_forward}:${ssh_port_a} 2>/dev/null
@@ -1584,7 +1601,19 @@ then
 fi
 }
 
+#删除前自动删除转发
+lxdpro_delete_ipt_list()
+{
+    lxdpro_delete_ipt=$(grep "$lxc_name" /usr/lxdpro_ipt | awk {'print $4'} | sort -n | uniq)
+    lxdpro_delete_ipt=($lxdpro_delete_ipt)
+    for delete_ipt in ${lxdpro_delete_ipt[@]};
+    do
+    sed -i '/'${delete_ipt}'/d' /etc/iptables/rules.v4 >/dev/null 2>&1
+    sed -i '/'${delete_ipt}'/d' /usr/lxdpro_ipt >/dev/null 2>&1
+    done
+    netfilter-persistent reload >/dev/null 2>&1
 
+}
 
 
 
@@ -1734,7 +1763,7 @@ lxc_corn()
 clear
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2023.6.22"
+echo -e "更新时间: 2023.6.24     版本: v0.2.1"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.定时备份指定容器${Font}"
 echo -e "          ${Green}2.定时备份所有容器${Font}"
@@ -1772,7 +1801,7 @@ if [[ -d '/snap/lxd' ]];then
 clear 
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2023.6.22"
+echo -e "更新时间: 2023.6.24     版本: v0.2.1"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.一键创建容器${Font}"
 echo -e "          ${Green}2.创建物理卷${Font}"
@@ -1824,7 +1853,7 @@ admin_cat3()
     clear 
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2023.6.22"
+echo -e "更新时间: 2023.6.24     版本: v0.2.1"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.一键删除${Font}"
 echo -e "          ${Green}2.删除网络${Font}"
@@ -1846,6 +1875,7 @@ case $choice in
     0)  front_page
     ;;
     1)  lxd_delete_lxc
+        lxdpro_delete_ipt_list
         lxc_stop
         lxc_delete
         lxc_yaf
@@ -1879,7 +1909,7 @@ admin_cat4()
 clear 
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2023.6.22"
+echo -e "更新时间: 2023.6.24     版本: v0.2.1"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.启动容器${Font}"
 echo -e "          ${Green}2.停止容器${Font}"
@@ -1947,7 +1977,7 @@ admin_cat5()
 clear 
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2023.6.22"
+echo -e "更新时间: 2023.6.24     版本: v0.2.1"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.创建端口转发${Font}"
 echo -e "          ${Green}2.删除端口转发${Font}"
@@ -1987,7 +2017,7 @@ admin_cat6()
 clear
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2023.6.22"
+echo -e "更新时间: 2023.6.24     版本: v0.2.1"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.备份容器${Font}"
 echo -e "          ${Green}2.导入备份${Font}"
@@ -2182,7 +2212,7 @@ front_page()
 clear
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2023.6.22"
+echo -e "更新时间: 2023.6.24     版本: v0.2.1"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.安装LXD${Font}"
 echo -e "          ${Green}2.创建系统容器${Font}"
