@@ -2,7 +2,8 @@
 <a href="https://t.me/mjjluodi">TG群组链接</a>
 <br>
 <a> 技术交流,有问题直接问群里</a>
-
+<br>
+<a> 这个脚本的开发环境是在DD了萌咖的Debian11写的,目前建议debian11,支持Ubuntu和debian</a>
 
 
 # 这是一个什么脚本？
@@ -40,6 +41,7 @@ dhclient
 lxc config set 容器名字 security.nesting true
 ```
 ## 更新日志
+<P>2023.6.24&nbsp;&nbsp;修复删除端口转发,转发还存在的问题,添加在一键删除实例前,删除实例转发. </p>
 <P>2023.6.23&nbsp;&nbsp;修复一些小问题,在选择实例名的时候列出实例列表,方便选择实例 </p>
 <P>2023.6.22&nbsp;&nbsp;修复SSH问题,目前一键支持开启centos debain ubuntu alpine的SSH,重写了端口转发,使用iptables代替LXD的转发,修复tg机器人管理面板问题. </p>
 <P>2023.6.19&nbsp;&nbsp;修复一些问题</p>
