@@ -11,21 +11,16 @@ Pe="\033[0;35m"
 
 
 
-wget_install=$(command -V wget >/dev/null 2>&1)
-if [ $? -ne 0 ];
+lxd_install_mod=("wget" "curl" "sudo" "jq" "ipcalc")
+for lxd_install_mod in "${lxd_install_mod[@]}"
+do
+    command -V $lxd_install_mod >/dev/null 2>&1
+    if [ $? -ne 0 ];
     then
-    apt -y install wget
-fi
-curl_install=$(command -V curl >/dev/null 2>&1)
-if [ $? -ne 0 ];
-    then
-    apt -y install curl
-fi
-jq_install=$(command -V jq >/dev/null 2>&1)
-if [ $? -ne 0 ];
-    then
-    apt -y install jq
-fi
+    apt -y install $lxd_install_mod
+    fi
+done
+
 
 
 
@@ -64,6 +59,53 @@ snap_install(){
     lxd_install
     fi
 }
+
+lxc_list_ipv6_1()
+{
+ipv6_network_name=$(ls /sys/class/net/ | grep -v "`ls /sys/devices/virtual/net/`")
+ipv6_name=$(curl -s -6 ip.sb -m 2 2> /dev/null )
+# ifconfig ${ipv6_network_name} | awk '/inet6/{print $2}'
+ip_network_gam=$(ip -6 addr show ${ipv6_network_name} | grep -E "${ipv6_name}/64|${ipv6_name}/80|${ipv6_name}/96|${ipv6_name}/112" | grep global | awk '{print $2}' 2> /dev/null)
+
+if [ -n "$ip_network_gam" ];
+    then
+        read -p "检测到你有一个公网ipv6的网段可以开ipv6实例,是否开启？(如果服务商上游禁止路由那ipv6可能无法使用,默认关闭) [Y/n] :" ipv6_lxc
+        [ -z "${ipv6_lxc}" ] && ipv6_lxc="n"
+
+fi
+}
+
+
+
+lxc_list_ipv6_2()
+{
+if [[ $ipv6_lxc == [Yy] ]]; then
+    if ! grep "net.ipv6.conf.${ipv6_network_name}.proxy_ndp = 1" /etc/sysctl.conf  >/dev/null
+    then
+        echo "net.ipv6.conf.${ipv6_network_name}.proxy_ndp = 1">>/etc/sysctl.conf
+        sysctl -p
+    fi
+    if ! grep "net.ipv6.conf.all.forwarding = 1" /etc/sysctl.conf  >/dev/null
+    then
+        echo "net.ipv6.conf.all.forwarding = 1">>/etc/sysctl.conf
+        sysctl -p
+    fi
+    if ! grep "net.ipv6.conf.all.proxy_ndp=1" /etc/sysctl.conf  >/dev/null
+    then
+        echo "net.ipv6.conf.all.proxy_ndp=1">>/etc/sysctl.conf
+        sysctl -p
+    fi
+        ipv6_lala=$(ipcalc ${ip_network_gam} | grep "Prefix:" | awk '{print $2}')
+        randbits=$(od -An -N2 -t x1 /dev/urandom | tr -d ' ')
+        lxc_ipv6="${ipv6_lala%/*}${randbits}"
+        lxc config device add $lxc_name eth1 nic nictype=routed parent=${ipv6_network_name} ipv6.address=${lxc_ipv6}
+fi
+}
+
+
+
+
+
 # 安装LXD
 lxd_install(){
     snap_core22=`snap list core22`
@@ -1024,6 +1066,9 @@ fi
 }
 
 
+
+
+
 #容器创建
 lxc_establish()
 {
@@ -1034,7 +1079,7 @@ read -p "cpu限制核数: " lxc_cpu
 read -p "运行内存限制(默认单位MB): " lxc_memory
 read -p "硬盘大小限制(默认单位MB): " lxc_disk
 read -p "网速限制(默认单位mbps): " lxc_rate
-
+lxc_list_ipv6_1
 
 lxc_user_storage_create
 lxc_user_network_create
@@ -1043,8 +1088,14 @@ lxc_user_cpu
 lxc_user_memory
 lxc_user_disk
 lxc_user_network_rate
+ipAddr=$(lxc network get ${lxc_name} ipv4.address)
+lxc_to_ip=${ipAddr%.*}.$((RANDOM%255+1))
+lxc config device set ${lxc_name} eth0 ipv4.address=${lxc_to_ip} >/dev/null 2>&1
+lxc_list_ipv6_2
 lxc_start
 lxd_information
+# lxc_ipv4=$(lxc info jp5 | grep inet | grep -v inet6 | awk '{print $2}' | grep "/24" | sed 's/\/..//')
+test -s /usr/lxdprolist && sed -i '/'${lxc_name}'/d' /usr/lxdprolist && echo "${lxc_name} ${lxc_to_ip}" >/usr/lxdprolist || echo "${lxc_name} ${lxc_to_ip}" >> /usr/lxdprolist
 }
 
 
@@ -1097,21 +1148,25 @@ if [ "${lxc_root_install}" = "${lxd_IMGE[0]}" ];
 then
     lxc_aaa="apt -y install"
     lxc_bbb="bash"
+    lxc_ccc="systemctl enable sshd.service>/dev/null 2>&1"
 fi
 if [ "${lxc_root_install}" = "${lxd_IMGE[1]}" ];
 then
     lxc_aaa="apt -y install"
     lxc_bbb="bash"
+    lxc_ccc="systemctl enable sshd.service>/dev/null 2>&1"
 fi
 if [ "${lxc_root_install}" = "${lxd_IMGE[2]}" ];
 then
     lxc_aaa="yum -y install"
     lxc_bbb="bash"
+    lxc_ccc="systemctl enable sshd.service>/dev/null 2>&1"
 fi
 if [ "${lxc_root_install}" = "${lxd_IMGE[3]}" ];
 then
     lxc_aaa="apk add -f"
     lxc_bbb="sh"
+    lxc_ccc="apk add openrc --no-cache && rc-update add sshd"
 fi
 echo "$lxc_aaa"
 read -p "SSH端口(默认22): " lxc_ssh_port
@@ -1135,7 +1190,7 @@ sed -i "s/^#\?Port.*/Port ${lxc_ssh_port}/g" /etc/ssh/sshd_config;
 sed -i "s/^#\?PermitRootLogin.*/PermitRootLogin yes/g" /etc/ssh/sshd_config;
 sed -i "s/^#\?PasswordAuthentication.*/PasswordAuthentication yes/g" /etc/ssh/sshd_config; 
 service sshd restart
-systemctl enable sshd.service>/dev/null 2>&1
+${lxc_ccc}
 echo root:${lxc_ssh_passwd} | chpasswd root
 EOF
 lxc file push /root/root.sh ${lxc_name}/root/
@@ -1238,10 +1293,8 @@ fi
 
 # curl -s --unix-socket /var/snap/lxd/common/lxd/unix.socket lxd/1.0/networks/${i} | jq .metadata | jq '.["used_by"]' | jq -r .[]
 
-
-
-
-
+lxc_network_forward=$(cat /usr/lxdprolist | grep "${lxc_name}" | awk {'print $2'})
+if [ -z "$lxc_network_forward" ];then
 i=0
 while :
 do
@@ -1282,6 +1335,8 @@ do
     fi
     sleep 2
 done
+test -s /usr/lxdprolist && sed -i '/'${lxc_name}'/d' /usr/lxdprolist && echo "${lxc_name} ${lxc_network_forward}" >/usr/lxdprolist || echo "${lxc_name} ${lxc_network_forward}" >> /usr/lxdprolist
+fi
 }
 
 
@@ -1496,9 +1551,9 @@ if [ $? -eq 0 ];then
     echo "容器导入失败！"
 fi
 }
-
-
-
+# ipAddr=lxc network get jp5 ipv4.address
+# lxc_to_ip=${ipAddr%.*}.$((RANDOM%255+1))
+# lxc config device set ${lxc_name} eth0 ipv4.address=${lxc_to_ip}
 #ipt端口转发
 lxd_iptables_port_create()
 {
@@ -1763,7 +1818,7 @@ lxc_corn()
 clear
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2023.6.24     版本: v0.2.1"
+echo -e "更新时间: 2023.6.29     版本: v0.2.2"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.定时备份指定容器${Font}"
 echo -e "          ${Green}2.定时备份所有容器${Font}"
@@ -1796,12 +1851,13 @@ esac
 # 创建系统容器
 admin_cat2()
 {
-if [[ -d '/snap/lxd' ]];then
+command -V lxc >/dev/null 2>&1
+if [ $? -eq 0 ];then
 
 clear 
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2023.6.24     版本: v0.2.1"
+echo -e "更新时间: 2023.6.29     版本: v0.2.2"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.一键创建容器${Font}"
 echo -e "          ${Green}2.创建物理卷${Font}"
@@ -1853,7 +1909,7 @@ admin_cat3()
     clear 
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2023.6.24     版本: v0.2.1"
+echo -e "更新时间: 2023.6.29     版本: v0.2.2"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.一键删除${Font}"
 echo -e "          ${Green}2.删除网络${Font}"
@@ -1881,6 +1937,7 @@ case $choice in
         lxc_yaf
         lxc_delete_network
         lxc_delete_storage
+        sed -i '/'${lxc_name}'/d' /usr/lxdprolist  >/dev/null 2>&1
     ;;
     2)  read -p "请输入要删除的容器网卡名称:" network_lxc
         lxc_delete_network
@@ -1909,7 +1966,7 @@ admin_cat4()
 clear 
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2023.6.24     版本: v0.2.1"
+echo -e "更新时间: 2023.6.29     版本: v0.2.2"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.启动容器${Font}"
 echo -e "          ${Green}2.停止容器${Font}"
@@ -1977,7 +2034,7 @@ admin_cat5()
 clear 
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2023.6.24     版本: v0.2.1"
+echo -e "更新时间: 2023.6.29     版本: v0.2.2"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.创建端口转发${Font}"
 echo -e "          ${Green}2.删除端口转发${Font}"
@@ -2017,7 +2074,7 @@ admin_cat6()
 clear
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2023.6.24     版本: v0.2.1"
+echo -e "更新时间: 2023.6.29     版本: v0.2.2"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.备份容器${Font}"
 echo -e "          ${Green}2.导入备份${Font}"
@@ -2212,7 +2269,7 @@ front_page()
 clear
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2023.6.24     版本: v0.2.1"
+echo -e "更新时间: 2023.6.29     版本: v0.2.2"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.安装LXD${Font}"
 echo -e "          ${Green}2.创建系统容器${Font}"
@@ -2238,7 +2295,6 @@ done
 
 case $choice in
     1)  snap_install
-
         sleep 4s
         front_page
     ;;
