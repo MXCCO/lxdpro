@@ -8,7 +8,8 @@ Red="\033[31m"
 Cyan='\033[0;36m'
 Pe="\033[0;35m"
 
-
+# blue=$(tput setaf 4)
+# normal=$(tput sgr0)
 
 
 lxd_install_mod=("wget" "curl" "sudo" "jq" "ipcalc")
@@ -108,6 +109,19 @@ fi
 
 # 安装LXD
 lxd_install(){
+    test -s /etc/sysctl.d/99-lxd.conf || cat << EOF >/etc/sysctl.d/99-lxd.conf
+fs.aio-max-nr = 524288
+fs.inotify.max_queued_events = 1048576
+fs.inotify.max_user_instances = 1048576
+fs.inotify.max_user_watches = 1048576
+kernel.dmesg_restrict = 1
+kernel.keys.maxbytes = 2000000
+kernel.keys.maxkeys = 2000
+net.core.bpf_jit_limit = 3000000000
+net.ipv4.neigh.default.gc_thresh3 = 8192
+net.ipv6.neigh.default.gc_thresh3 = 8192
+vm.max_map_count = 262144
+EOF
     snap_core22=`snap list core22`
     snap_lxd=`snap list lxd`
     if [[ "$snap_core22" =~ core22.* ]]&&[[ "$snap_lxd" =~ lxd.* ]]
@@ -532,11 +546,11 @@ do
     lxc_jq_cpu=$(curl -s --unix-socket /var/snap/lxd/common/lxd/unix.socket lxd/1.0/instances/${jq_list_name[${i}]} | jq .metadata | jq .expanded_config |  jq -r .'["limits.cpu"]')
     lxc_jq_memory=$(curl -s --unix-socket /var/snap/lxd/common/lxd/unix.socket lxd/1.0/instances/${jq_list_name[${i}]} | jq .metadata | jq .expanded_config |  jq -r .'["limits.memory"]')
     lxc_jq_statuscode=$(curl -s --unix-socket /var/snap/lxd/common/lxd/unix.socket lxd/1.0/instances/${jq_list_name[${i}]} | jq .metadata | jq -r .'["status_code"]')
-    if [ $lxc_jq_cpu = "null" ];
+    if [[ $lxc_jq_cpu = "null" ]];
     then
         lxc_jq_cpu="未限制"
     fi
-    if [ $lxc_jq_memory = "null" ];
+    if [[ $lxc_jq_memory = "null" ]];
     then
         lxc_jq_cpu="未限制"
     fi
