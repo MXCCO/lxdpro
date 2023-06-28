@@ -41,7 +41,7 @@ dhclient
 lxc config set 容器名字 security.nesting true
 ```
 ## 更新日志
-<P>2023.6.29&nbsp;&nbsp;增加端口转发成功率,新增ipv6 </p>
+<P>2023.6.29&nbsp;&nbsp;增加端口转发成功率,在一键创建容器中新增开ipv6的支持,修复Alpine在一键开启SSH中无法自启的问题. </p>
 <P>2023.6.24&nbsp;&nbsp;修复删除端口转发,转发还存在的问题,添加在一键删除实例前,删除实例转发. </p>
 <P>2023.6.23&nbsp;&nbsp;修复一些小问题,在选择实例名的时候列出实例列表,方便选择实例 </p>
 <P>2023.6.22&nbsp;&nbsp;修复SSH问题,目前一键支持开启centos debain ubuntu alpine的SSH,重写了端口转发,使用iptables代替LXD的转发,修复tg机器人管理面板问题. </p>
