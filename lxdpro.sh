@@ -1223,13 +1223,16 @@ lxd_lxc_pid()
 {
 read -p "请输入任务进程里面的PID: " lxc_pid
 
-lxd_pid=`grep -lwm1 ${lxc_pid} /sys/fs/cgroup/pids/lxc.payload.*/*/*/tasks | sed 's/.*lxc\.payload\.//; s/\/.*//'`
-if  [ $lxd_pid ]
+# lxd_pid=`grep -lwm1 ${lxc_pid} /sys/fs/cgroup/pids/lxc.payload.*/*/*/tasks | sed 's/.*lxc\.payload\.//; s/\/.*//'`
+lxc_pid=$(ps -ef | grep ${lxc_pid} | grep "1000000"  | awk '{print $3}' 2>/dev/null)
+lxc_pid=$(ps -ef | grep "${lxc_pid}" | grep "/sbin/init" |  awk '{print $3}' 2>/dev/null)
+lxc_pid=$(ps -ef | grep "${lxc_pid}" | grep "/var/snap/lxd/common/lxd/containers" | awk '{print $11}' 2>/dev/null)    
+if  [[ -z "${lxc_pid}" ]]
     then
-    echo -e "这PID进程属于 ${Red}$lxd_pid${Font} 容器"
-    else
     echo -e "${Red}请输入正确的pid,或者此pid不是为常驻进程!${Font}"
     echo -e "如果无法查到容器,请使用 ${Red}kill${Font} 和 ${Red}killall${Font} 杀掉PID或者进程名"
+    else
+    echo -e "这PID进程属于 ${Red}$lxc_pid${Font} 容器"
 fi
 }
 
