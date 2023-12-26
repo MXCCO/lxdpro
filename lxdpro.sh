@@ -133,6 +133,9 @@ EOF
     echo "开始安装LXD"
     sudo snap install core
     sudo snap install lxd
+    snap set lxd lxcfs.pidfd=true
+    snap set lxd lxcfs.loadavg=true
+    snap set lxd lxcfs.cfs=true
     echo "LXD安装完成"        
     echo "需要重启才能使用后续脚本"
     echo "重启后请再次执行步骤1确认问题"
@@ -1163,24 +1166,28 @@ then
     lxc_aaa="apt -y install"
     lxc_bbb="bash"
     lxc_ccc="systemctl enable sshd.service>/dev/null 2>&1"
+    lxc_ddd="apt -y"
 fi
 if [ "${lxc_root_install}" = "${lxd_IMGE[1]}" ];
 then
     lxc_aaa="apt -y install"
     lxc_bbb="bash"
     lxc_ccc="systemctl enable sshd.service>/dev/null 2>&1"
+    lxc_ddd="apt -y"
 fi
 if [ "${lxc_root_install}" = "${lxd_IMGE[2]}" ];
 then
     lxc_aaa="yum -y install"
     lxc_bbb="bash"
     lxc_ccc="systemctl enable sshd.service>/dev/null 2>&1"
+    lxc_ddd="yum -y"
 fi
 if [ "${lxc_root_install}" = "${lxd_IMGE[3]}" ];
 then
     lxc_aaa="apk add -f"
     lxc_bbb="sh"
     lxc_ccc="apk add openrc --no-cache && rc-update add sshd"
+    lxc_ddd="apk -y"
 fi
 echo "$lxc_aaa"
 read -p "SSH端口(默认22): " lxc_ssh_port
@@ -1208,6 +1215,7 @@ ${lxc_ccc}
 echo root:${lxc_ssh_passwd} | chpasswd root
 EOF
 lxc file push /root/root.sh ${lxc_name}/root/
+lxc exec ${lxc_name} -- ${lxc_ddd} update
 lxc exec ${lxc_name} -- ${lxc_aaa} wget
 lxc exec ${lxc_name} -- ${lxc_aaa} openssh-server
 lxc exec ${lxc_name} -- ${lxc_bbb} root.sh
@@ -1835,7 +1843,7 @@ lxc_corn()
 clear
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2023.6.29     版本: v0.2.2"
+echo -e "更新时间: 2023.12.26     版本: v0.2.3"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.定时备份指定容器${Font}"
 echo -e "          ${Green}2.定时备份所有容器${Font}"
@@ -1874,7 +1882,7 @@ if [ $? -eq 0 ];then
 clear 
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2023.6.29     版本: v0.2.2"
+echo -e "更新时间: 2023.12.26     版本: v0.2.3"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.一键创建容器${Font}"
 echo -e "          ${Green}2.创建物理卷${Font}"
@@ -1926,7 +1934,7 @@ admin_cat3()
     clear 
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2023.6.29     版本: v0.2.2"
+echo -e "更新时间: 2023.12.26     版本: v0.2.3"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.一键删除${Font}"
 echo -e "          ${Green}2.删除网络${Font}"
@@ -1983,7 +1991,7 @@ admin_cat4()
 clear 
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2023.6.29     版本: v0.2.2"
+echo -e "更新时间: 2023.12.26     版本: v0.2.3"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.启动容器${Font}"
 echo -e "          ${Green}2.停止容器${Font}"
@@ -2051,7 +2059,7 @@ admin_cat5()
 clear 
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2023.6.29     版本: v0.2.2"
+echo -e "更新时间: 2023.12.26     版本: v0.2.3"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.创建端口转发${Font}"
 echo -e "          ${Green}2.删除端口转发${Font}"
@@ -2091,7 +2099,7 @@ admin_cat6()
 clear
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2023.6.29     版本: v0.2.2"
+echo -e "更新时间: 2023.12.26     版本: v0.2.3"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.备份容器${Font}"
 echo -e "          ${Green}2.导入备份${Font}"
@@ -2286,7 +2294,7 @@ front_page()
 clear
 echo -e "————————————————By'MXCCO———————————————"
 echo -e "脚本地址: https://github.com/MXCCO/lxdpro"
-echo -e "更新时间: 2023.6.29     版本: v0.2.2"
+echo -e "更新时间: 2023.12.26     版本: v0.2.3"
 echo -e "———————————————————————————————————————"
 echo -e "          ${Green}1.安装LXD${Font}"
 echo -e "          ${Green}2.创建系统容器${Font}"
