@@ -4,6 +4,7 @@
 <a> 技术交流,有问题直接问群里</a>
 <br>
 <a> 这个脚本的开发环境是在DD了萌咖的Debian11写的,目前建议debian11,支持Ubuntu和debian</a>
+<br>
 <a> 后续在Tool的debian11上更新的脚本,<a href="https://github.com/leitbogioro/Tools">脚本地址</a></a>
 
 # 这是一个什么脚本？
